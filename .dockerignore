@@ -1,0 +1,7 @@
+venv/
+.env
+.venv
+env/
+user_audio/
+*.gguf
+*.pt

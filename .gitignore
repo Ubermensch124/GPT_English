@@ -1,0 +1,11 @@
+.env
+env/
+.venv
+venv
+
+*.gguf
+*.pt
+
+__pycache__/
+README.test.md
+user_audio/
