@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+gpt4all
+pydub
+openai
+openai-whisper
+gTTS
+python-dotenv
+pyttsx3
+python-multipart

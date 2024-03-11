@@ -1,6 +1,8 @@
 import os
 import logging
 import json
+import requests
+import time
 
 from pydub import AudioSegment
 from telegram import Update
@@ -8,13 +10,11 @@ from telegram.ext import (
     filters, MessageHandler, ApplicationBuilder, ContextTypes, CommandHandler
 )
 
+import aiofiles.os
+
 from credentials import TELEGRAM_BOT_TOKEN
-from make_audio import get_speech_from_gtts
-from text_generator import get_random_text
-from whisper_test import extract_text_from_audio
 from database import Base, engine, Session
 from models import MyObject
-from gpt4all_test import get_response
 
 Base.metadata.create_all(bind=engine)
 
@@ -41,14 +41,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Для подробной информации используйте \help.")
 
 
-async def get_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """ Бот отсылает рандомный отрывок из 'Дюны' в виде голосового сообщения """
-    filepath = get_speech_from_gtts(get_random_text())
-    with open(filepath, 'rb') as voice_file:
-        await context.bot.send_voice(chat_id=update.effective_chat.id, voice=voice_file)
-    os.remove(filepath)
-
-
 async def voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """ Бот принимает от нас голосовое сообщение """
     session = Session()
@@ -56,21 +48,26 @@ async def voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_history = None
     if res is not None:
         chat_history = json.loads(res.chat_history)
-    
+
     voice_file = await context.bot.get_file(update.message.voice.file_id)
     user = update.effective_user.username
-    filename_ogg = f"user_audio/{user}.ogg"
-    filename_mp3 = f"user_audio/{user}.mp3"
-    
-    await voice_file.download_to_drive(filename_ogg)
-    
-    ogg_audio = AudioSegment.from_file(filename_ogg, format="ogg")
-    _ = ogg_audio.export(filename_mp3, format="mp3")
-    
-    user_text = extract_text_from_audio(path=filename_mp3)
-    model_answer = get_response(current_prompt=user_text, chat_history=chat_history)
-    
-    serialize_history = json.dumps(model_answer['chat_history'])
+    ogg_path = f"../shared/{user}.ogg"
+    mp3_path = f"../shared/{user}.mp3"
+
+    await voice_file.download_to_drive(ogg_path)
+
+    ogg_audio = AudioSegment.from_file(ogg_path, format="ogg")
+    _ = ogg_audio.export(mp3_path, format="mp3")
+
+    response = requests.post(
+        "http://localhost:8000/get_response_to_the_audio",
+        json={"chat_history": {"chat": chat_history}, "path_to_user_audio": {"path": mp3_path}},
+        timeout=45,
+    )
+    response = response.json()
+    user_text, model_answer, updated_chat, gpt_audio_path = response.values()
+
+    serialize_history = json.dumps(updated_chat)
     to_delete = session.query(MyObject).filter(MyObject.chat_id == update.effective_chat.id).first()
     if to_delete:
         session.delete(to_delete)
@@ -78,16 +75,13 @@ async def voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session.add(new_obj)
     session.commit()
     session.close()
-    
+
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Вот твой текст: {user_text}")
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=model_answer['response'])
-    
-    filepath = get_speech_from_gtts(model_answer['response'])
-    with open(filepath, 'rb') as voice_file:
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=model_answer)
+    with open(gpt_audio_path, 'rb') as voice_file:
         await context.bot.send_voice(chat_id=update.effective_chat.id, voice=voice_file)
-    os.remove(filepath)
-    # os.remove(filename_ogg)
-    # os.remove(filename_mp3)
+
+    os.remove(gpt_audio_path)
 
 
 async def delete_context(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -110,13 +104,11 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
 
     start_handler = CommandHandler('start', start)
-    get_voice_handler =  CommandHandler('get_voice', get_voice)
     voice_handler = MessageHandler(filters.VOICE, voice)
     delete_context_handler = CommandHandler('delete_context', delete_context)
     help_handler = CommandHandler('help', help_bot)
 
     application.add_handler(start_handler)
-    application.add_handler(get_voice_handler)
     application.add_handler(voice_handler)
     application.add_handler(delete_context_handler)
     application.add_handler(help_handler)

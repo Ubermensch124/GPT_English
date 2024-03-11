@@ -2,10 +2,12 @@
 env/
 .venv
 venv
-
+backend_venv/
+bot_venv/
 *.gguf
 *.pt
 
 __pycache__/
 README.test.md
 user_audio/
+shared/

@@ -1,0 +1,7 @@
+python-telegram-bot
+pydub
+sqlalchemy
+psycopg2
+requests
+asyncio
+aiofiles
