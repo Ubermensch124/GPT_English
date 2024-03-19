@@ -2,8 +2,9 @@
 env/
 .venv
 venv
-backend_venv/
-bot_venv/
+*_venv/
+*_env/
+
 *.gguf
 *.pt
 
