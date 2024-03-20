@@ -8,3 +8,5 @@ gTTS
 python-dotenv
 pyttsx3
 python-multipart
+sqlalchemy
+psycopg2

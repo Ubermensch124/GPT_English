@@ -14,7 +14,7 @@ def get_response(current_prompt, chat_history=None):
     """
     system_template = '''You are a excellent English teacher. User send to you a sentences and you need to find any grammatical mistakes in them and explain it to user.'''
     prompt_template = 'USER: {0}\nASSISTANT: '
-    
+
     result = {"response": "", "chat_history": chat_history}
 
     with model.chat_session(system_template, prompt_template):
@@ -24,4 +24,3 @@ def get_response(current_prompt, chat_history=None):
         result['chat_history'] = model.current_chat_session
 
     return result['response'], result['chat_history']
-
