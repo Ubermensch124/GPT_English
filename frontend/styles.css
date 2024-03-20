@@ -7,9 +7,25 @@ body {
   
   .container {
     max-width: 400px;
+    /* max-height: 800px; */
+    
     margin: 0 auto;
   }
+
+  .textarea-container {
+    display: flex; /* Enable flexbox layout */
+    flex-direction: column; /* Stack elements vertically */
+  }
   
+  .textarea-container textarea {
+    width: 400px;
+    /* height: 400px; */
+    resize: none;
+    flex: 1; /* Make both textareas equally sized */
+    margin: 5px; /* Add some margin for spacing */
+    border: 1px solid #ccc; /* Add a border for visual separation */
+  }
+
   button {
     padding: 10px 20px;
     font-size: 16px;

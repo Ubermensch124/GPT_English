@@ -9,10 +9,13 @@
 <body>
   <div class="container">
     <h1>Voice Recording</h1>
-    <textarea id="textOutput" placeholder="Response will appear here..." readonly></textarea>
+    <div class="textarea-container">
+      <textarea id="UserOutput" placeholder="Your prompt will appear here..." readonly></textarea>
+      <textarea id="GPTOutput" placeholder="GPT Response will appear here..." readonly></textarea>
+    </div>
     <button id="startBtn">Start Recording</button>
     <button id="stopBtn" disabled>Stop Recording</button>
-    <button id="resetBtn">Reset Conversation</button>
+    <button id="resetBtn" disabled>Reset Conversation</button>
   </div>
   <script src="app.js"></script>
 </body>
