@@ -9,25 +9,33 @@
   <body>
     <header>
       <div class="header-container">
-        <img src="static/header_logo.png" alt="Header Icon" class="header-icon">
+        <img
+          src="static/header_logo.png"
+          alt="Header Icon"
+          class="header-icon"
+        />
         <h1 class="header-title">GPTeacher v0.0.1</h1>
       </div>
+      <a href="https://t.me/testfor_funbot" target="_blank">
+        <img class="tg_image" src="static/tg_image.png" alt="Telegram bot" />
+      </a>
     </header>
     <main>
       <div class="main-page">
         <div class="chat-header">
-          <img src="static/logo.png" alt="Chat Icon" class="chat-icon">
+          <img src="static/logo.png" alt="Chat Icon" class="chat-icon" />
           <h2 class="chat-title">GPTeacher</h2>
         </div>
         <div class="chat-container">
           <div class="chat-box">
-            <div class="chat-messages" id="chatMessages">
-              <!-- <div class="initial-message" id="InitialMessage">Just say me something...</div> -->
-            </div>
+            <div class="chat-messages" id="chatMessages"></div>
           </div>
         </div>
         <div class="text-input-container">
-          <textarea id="textInput" placeholder="Type your message..."></textarea>
+          <textarea
+            id="textInput"
+            placeholder="Type your message..."
+          ></textarea>
           <button id="sendTextBtn"></button>
         </div>
         <div class="button-container">

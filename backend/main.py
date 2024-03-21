@@ -74,25 +74,22 @@ app.add_middleware(
 
 @app.post("/text_prompt")
 async def text_prompt(prompt: TextPrompt, session: Session = Depends(get_session), userId: str | None = Header(None)):
-    print(prompt)
     result = function(session=session, text=prompt.text, userId=userId)
     return result
 
 
 @app.post("/audio_prompt")
-async def audio_prompt(session: Session = Depends(get_session), audio: UploadFile = File(...), userId: str | None = Header(None)):
+async def audio_prompt(audio: UploadFile = File(...)):
     with NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
         temp_file.write(await audio.read())
         temp_file_path = temp_file.name
 
     text = extract_text_from_audio(path=temp_file_path)
 
-    result = function(session=session, text=text, userId=userId)
-
     temp_file.close()
     os.remove(temp_file_path)
 
-    return result
+    return {"text": text}
 
 
 def function(session, text, userId):

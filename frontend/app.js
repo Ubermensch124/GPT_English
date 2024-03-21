@@ -53,6 +53,40 @@ async function checkChat() {
 
 checkChat();
 
+async function sendTextEvent(text) {
+  try {
+    // const text = textInput.value.trim();
+
+    const userMessage = document.createElement("div");
+    userMessage.classList.add("user-message");
+    userMessage.textContent = text;
+    chatMessages.appendChild(userMessage);
+
+    const response = await fetch("http://localhost:8000/text_prompt", {
+      method: "POST",
+      headers: { userId: userId, "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error sending text prompt");
+    }
+
+    const data = await response.json();
+
+    const gptMessage = document.createElement("div");
+    gptMessage.classList.add("gpt-message");
+    gptMessage.textContent = data["GPTResponse"].trim();
+    chatMessages.appendChild(gptMessage);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    console.log("Text sent successfully");
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
 async function sendAudioToServer(audioBlob) {
   const formData = new FormData();
   formData.append("audio", audioBlob, "recording.mp3");
@@ -69,17 +103,8 @@ async function sendAudioToServer(audioBlob) {
     }
 
     const data = await response.json();
-    const userMessage = document.createElement("div");
-    userMessage.classList.add("user-message");
-    userMessage.textContent = data["UserPrompt"];
-    chatMessages.appendChild(userMessage);
-
-    const gptMessage = document.createElement("div");
-    gptMessage.classList.add("gpt-message");
-    gptMessage.textContent = data["GPTResponse"];
-    chatMessages.appendChild(gptMessage);
-
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+    const txt = data["text"];
+    sendTextEvent(txt);
 
     console.log("Audio sent successfully");
   } catch (error) {
@@ -139,18 +164,21 @@ async function resetEvent() {
   }
 }
 
+let flag = false;
+
 // Reset Conversation
 resetBtn.addEventListener("click", async () => {
   resetEvent();
+  sendTextBtn.style.transform = "rotate(0deg)";
+  flag = false;
+  textInput.value = "";
 });
-
-
-let flag = false;
 
 textInput.addEventListener("input", () => {
   if (textInput.value.trim()) {
     if (!flag) {
-      sendTextBtn.style.transform = "rotate(-90deg) translateY(3px) translateX(-5px)";
+      sendTextBtn.style.transform =
+        "rotate(-90deg) translateY(3px) translateX(-5px)";
       flag = true;
     }
   }
@@ -162,46 +190,25 @@ textInput.addEventListener("input", () => {
   }
 });
 
-
-async function sendTextEvent() {
-  try {
-    const text = textInput.value.trim();
-
-    const userMessage = document.createElement("div");
-    userMessage.classList.add("user-message");
-    userMessage.textContent = text;
-    chatMessages.appendChild(userMessage);
-
-    const response = await fetch("http://localhost:8000/text_prompt", {
-      method: "POST",
-      headers: { userId: userId, "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text })
-    });
-
-    if (!response.ok) {
-      throw new Error("Error sending text prompt");
-    }
-
-    const data = await response.json();
-
-    const gptMessage = document.createElement("div");
-    gptMessage.classList.add("gpt-message");
-    gptMessage.textContent = data["GPTResponse"];
-    chatMessages.appendChild(gptMessage);
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    console.log("Text sent successfully");
-  } catch (error) {
-    console.error("Error:", error);
+textInput.addEventListener("keydown", (event) => {
+  if (event.shiftKey && event.key === "Enter") {
+    event.preventDefault();
+    textInput.value = textInput.value + '\n';
   }
-}
-
+  else if (event.key === "Enter") {
+    event.preventDefault(); 
+    sendTextBtn.click();
+  }
+});
 
 // Send Text Prompt
 sendTextBtn.addEventListener("click", async () => {
   if (textInput.value.trim()) {
-    sendTextEvent();
+    const txt = textInput.value.trim();
+    sendTextEvent(txt);
     textInput.value = "";
+    sendTextBtn.style.transform = "rotate(0deg)";
+    flag = false;
+    resetBtn.disabled = false;
   }
 });
