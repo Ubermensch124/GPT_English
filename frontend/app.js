@@ -5,6 +5,7 @@ const chatMessages = document.getElementById("chatMessages");
 const initialMessage = document.getElementById("initialMessage");
 const textInput = document.getElementById("textInput");
 const sendTextBtn = document.getElementById("sendTextBtn");
+const newBtn = document.getElementById("newBtn");
 
 let mediaRecorder;
 let chunks = [];
@@ -39,7 +40,7 @@ async function checkChat() {
         } else {
           message.classList.add("gpt-message");
         }
-        message.textContent = arr[i]["content"];
+        message.textContent = arr[i]["content"].trim();
         chatMessages.appendChild(message);
       }
 
@@ -112,39 +113,48 @@ async function sendAudioToServer(audioBlob) {
   }
 }
 
-// Start recording
-startBtn.addEventListener("click", async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.addEventListener("dataavailable", (event) => {
-      chunks.push(event.data);
-    });
+newBtn.addEventListener('click', async () => {
+  if (!mediaRecorder) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.addEventListener("stop", () => {
-      const audioBlob = new Blob(chunks, { type: "audio/mp3" });
-      chunks = [];
-      sendAudioToServer(audioBlob);
-    });
+      mediaRecorder.addEventListener('dataavailable', (event) => {
+        chunks.push(event.data);
+      });
 
-    mediaRecorder.start();
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-  } catch (error) {
-    console.error("Error accessing microphone:", error);
+      mediaRecorder.addEventListener('stop', () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/mp3' });
+        chunks = [];
+        sendAudioToServer(audioBlob);
+        mediaRecorder = null;
+        newBtn.style.backgroundImage = 'url("static/mic.png")';
+        newBtn.classList.remove('Rec');
+        newBtn.title = "Start recording";
+      });
+
+      mediaRecorder.start();
+      newBtn.style.backgroundImage = 'url("static/mic_red.png")';
+      newBtn.classList.add('Rec');
+      newBtn.title = "Stop recording";
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  } else {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
   }
 });
 
-// Stop recording
-stopBtn.addEventListener("click", () => {
-  if (mediaRecorder && mediaRecorder.state !== "inactive") {
-    mediaRecorder.stop();
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-    resetBtn.disabled = false;
+
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    newBtn.click();
   }
 });
+
 
 async function resetEvent() {
   try {
@@ -164,31 +174,34 @@ async function resetEvent() {
   }
 }
 
-let flag = false;
 
-// Reset Conversation
+let sendTextBtnFlag = false;
+
+
 resetBtn.addEventListener("click", async () => {
   resetEvent();
   sendTextBtn.style.transform = "rotate(0deg)";
-  flag = false;
+  sendTextBtnFlag = false;
   textInput.value = "";
 });
 
+
 textInput.addEventListener("input", () => {
   if (textInput.value.trim()) {
-    if (!flag) {
+    if (!sendTextBtnFlag) {
       sendTextBtn.style.transform =
         "rotate(-90deg) translateY(3px) translateX(-5px)";
-      flag = true;
+      sendTextBtnFlag = true;
     }
   }
   if (!textInput.value.trim()) {
-    if (flag) {
+    if (sendTextBtnFlag) {
       sendTextBtn.style.transform = "rotate(0deg)";
-      flag = false;
+      sendTextBtnFlag = false;
     }
   }
 });
+
 
 textInput.addEventListener("keydown", (event) => {
   if (event.shiftKey && event.key === "Enter") {
@@ -201,14 +214,14 @@ textInput.addEventListener("keydown", (event) => {
   }
 });
 
-// Send Text Prompt
+
 sendTextBtn.addEventListener("click", async () => {
   if (textInput.value.trim()) {
     const txt = textInput.value.trim();
     sendTextEvent(txt);
     textInput.value = "";
     sendTextBtn.style.transform = "rotate(0deg)";
-    flag = false;
+    sendTextBtnFlag = false;
     resetBtn.disabled = false;
   }
 });
