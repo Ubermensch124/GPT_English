@@ -1,22 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice Recording App</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Voice Recording</h1>
-    <div class="textarea-container">
-      <textarea id="UserOutput" placeholder="Your prompt will appear here..." readonly></textarea>
-      <textarea id="GPTOutput" placeholder="GPT Response will appear here..." readonly></textarea>
-    </div>
-    <button id="startBtn">Start Recording</button>
-    <button id="stopBtn" disabled>Stop Recording</button>
-    <button id="resetBtn" disabled>Reset Conversation</button>
-  </div>
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Recording App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <img src="static/header_logo.png" alt="Header Icon" class="header-icon">
+        <h1 class="header-title">GPTeacher v0.0.1</h1>
+      </div>
+    </header>
+    <main>
+      <div class="main-page">
+        <div class="chat-header">
+          <img src="static/logo.png" alt="Chat Icon" class="chat-icon">
+          <h2 class="chat-title">GPTeacher</h2>
+        </div>
+        <div class="chat-container">
+          <div class="chat-box">
+            <div class="chat-messages" id="chatMessages">
+              <!-- <div class="initial-message" id="InitialMessage">Just say me something...</div> -->
+            </div>
+          </div>
+        </div>
+        <div class="text-input-container">
+          <textarea id="textInput" placeholder="Type your message..."></textarea>
+          <button id="sendTextBtn"></button>
+        </div>
+        <div class="button-container">
+          <button id="startBtn">Start Recording</button>
+          <button id="stopBtn" disabled>Stop Recording</button>
+          <button id="resetBtn" disabled>Reset Conversation</button>
+        </div>
+      </div>
+    </main>
+    <script src="app.js"></script>
+  </body>
 </html>

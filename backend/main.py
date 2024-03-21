@@ -35,6 +35,12 @@ class Path(BaseModel):
             raise ValueError("File must exists")
         return value
 
+
+
+class TextPrompt(BaseModel):
+    text: str
+    
+    
 paths = ["http://localhost", "http://127.0.0.1"]
 ports = [3000, 5173, 4173, 5500]
 origins = [f'{path}:{port}' for port in ports for path in paths]
@@ -66,41 +72,35 @@ app.add_middleware(
 )
 
 
-@app.post("/get_response_to_the_audio")
-def get_gpt_response(chat_history: ChatHistory, path_to_user_audio: Path):
-    """ 
-    Принимает chat_history в виде json строки
-    и путь до аудио-файла от пользователя. 
-    """
-    user_prompt = extract_text_from_audio(path=path_to_user_audio.path)
-    gpt_text_answer, updated_chat_history = get_response(
-        current_prompt=user_prompt,
-        chat_history=chat_history.chat
-    )
-    gpt_audio_answer_path = get_speech_from_gtts(text=gpt_text_answer)
-    return {
-        "user_prompt": user_prompt,
-        "gpt_text_answer": gpt_text_answer,
-        "updated_chat_history": updated_chat_history,
-        "gpt_audio_answer_path": gpt_audio_answer_path,
-    }
+@app.post("/text_prompt")
+async def text_prompt(prompt: TextPrompt, session: Session = Depends(get_session), userId: str | None = Header(None)):
+    print(prompt)
+    result = function(session=session, text=prompt.text, userId=userId)
+    return result
 
 
-@app.post("/get_audio")
-async def get_audio(session: Session = Depends(get_session), audio: UploadFile = File(...), userId: str | None = Header(None)):
-    """
-    Тестирование работы фронтенда
-    """
-    res = session.query(WebUser).filter(WebUser.chat_id == userId).first()
-    chat_history = None
-    if res is not None:
-        chat_history = json.loads(res.chat_history)
-
+@app.post("/audio_prompt")
+async def audio_prompt(session: Session = Depends(get_session), audio: UploadFile = File(...), userId: str | None = Header(None)):
     with NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
         temp_file.write(await audio.read())
         temp_file_path = temp_file.name
 
     text = extract_text_from_audio(path=temp_file_path)
+
+    result = function(session=session, text=text, userId=userId)
+
+    temp_file.close()
+    os.remove(temp_file_path)
+
+    return result
+
+
+def function(session, text, userId):
+    res = session.query(WebUser).filter(WebUser.chat_id == userId).first()
+    chat_history = None
+    if res is not None:
+        chat_history = json.loads(res.chat_history)
+
     gpt_response, updated_chat = get_response(current_prompt=text, chat_history=chat_history)
 
     serialize_history = json.dumps(updated_chat)
@@ -111,8 +111,6 @@ async def get_audio(session: Session = Depends(get_session), audio: UploadFile =
     session.add(new_obj)
     session.commit()
 
-    temp_file.close()
-    os.remove(temp_file_path)
     return {"GPTResponse": gpt_response, "UserPrompt": text}
 
 

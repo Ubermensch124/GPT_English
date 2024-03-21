@@ -1,8 +1,10 @@
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const resetBtn = document.getElementById("resetBtn");
-const UserOutput = document.getElementById("UserOutput");
-const GPTOutput = document.getElementById("GPTOutput");
+const chatMessages = document.getElementById("chatMessages");
+const initialMessage = document.getElementById("initialMessage");
+const textInput = document.getElementById("textInput");
+const sendTextBtn = document.getElementById("sendTextBtn");
 
 let mediaRecorder;
 let chunks = [];
@@ -28,10 +30,20 @@ async function checkChat() {
     const data = await response.json();
     if (data["chat_history"]) {
       let arr = data["chat_history"];
-      let user_answer = arr[arr.length - 2]["content"];
-      let gpt_answer = arr[arr.length - 1]["content"];
-      UserOutput.value = user_answer;
-      GPTOutput.value = gpt_answer;
+      chatMessages.innerHTML = "";
+
+      for (let i = 1; i < arr.length; i += 1) {
+        const message = document.createElement("div");
+        if (i % 2 === 1) {
+          message.classList.add("user-message");
+        } else {
+          message.classList.add("gpt-message");
+        }
+        message.textContent = arr[i]["content"];
+        chatMessages.appendChild(message);
+      }
+
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
       resetBtn.disabled = false;
     }
   } catch (error) {
@@ -46,7 +58,7 @@ async function sendAudioToServer(audioBlob) {
   formData.append("audio", audioBlob, "recording.mp3");
 
   try {
-    const response = await fetch("http://localhost:8000/get_audio", {
+    const response = await fetch("http://localhost:8000/audio_prompt", {
       method: "POST",
       body: formData,
       headers: { userId: userId },
@@ -57,8 +69,17 @@ async function sendAudioToServer(audioBlob) {
     }
 
     const data = await response.json();
-    UserOutput.value = data["UserPrompt"];
-    GPTOutput.value = data["GPTResponse"];
+    const userMessage = document.createElement("div");
+    userMessage.classList.add("user-message");
+    userMessage.textContent = data["UserPrompt"];
+    chatMessages.appendChild(userMessage);
+
+    const gptMessage = document.createElement("div");
+    gptMessage.classList.add("gpt-message");
+    gptMessage.textContent = data["GPTResponse"];
+    chatMessages.appendChild(gptMessage);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 
     console.log("Audio sent successfully");
   } catch (error) {
@@ -100,8 +121,7 @@ stopBtn.addEventListener("click", () => {
   }
 });
 
-// Reset Conversation
-resetBtn.addEventListener("click", async () => {
+async function resetEvent() {
   try {
     const response = await fetch("http://localhost:8000/reset_conversation", {
       method: "DELETE",
@@ -112,10 +132,76 @@ resetBtn.addEventListener("click", async () => {
       throw new Error("Error resetting conversation");
     }
 
-    GPTOutput.value = "";
-    UserOutput.value = "";
+    chatMessages.innerHTML = "";
     resetBtn.disabled = true;
   } catch (error) {
     console.error("Error:", error);
+  }
+}
+
+// Reset Conversation
+resetBtn.addEventListener("click", async () => {
+  resetEvent();
+});
+
+
+let flag = false;
+
+textInput.addEventListener("input", () => {
+  if (textInput.value.trim()) {
+    if (!flag) {
+      sendTextBtn.style.transform = "rotate(-90deg) translateY(3px) translateX(-5px)";
+      flag = true;
+    }
+  }
+  if (!textInput.value.trim()) {
+    if (flag) {
+      sendTextBtn.style.transform = "rotate(0deg)";
+      flag = false;
+    }
+  }
+});
+
+
+async function sendTextEvent() {
+  try {
+    const text = textInput.value.trim();
+
+    const userMessage = document.createElement("div");
+    userMessage.classList.add("user-message");
+    userMessage.textContent = text;
+    chatMessages.appendChild(userMessage);
+
+    const response = await fetch("http://localhost:8000/text_prompt", {
+      method: "POST",
+      headers: { userId: userId, "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text })
+    });
+
+    if (!response.ok) {
+      throw new Error("Error sending text prompt");
+    }
+
+    const data = await response.json();
+
+    const gptMessage = document.createElement("div");
+    gptMessage.classList.add("gpt-message");
+    gptMessage.textContent = data["GPTResponse"];
+    chatMessages.appendChild(gptMessage);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    console.log("Text sent successfully");
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+
+// Send Text Prompt
+sendTextBtn.addEventListener("click", async () => {
+  if (textInput.value.trim()) {
+    sendTextEvent();
+    textInput.value = "";
   }
 });
