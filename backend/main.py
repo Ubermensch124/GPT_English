@@ -15,8 +15,6 @@ from make_audio import get_speech_from_gtts
 from database import Base, engine, Session
 from models import WebUser
 
-Base.metadata.create_all(bind=engine)
-
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
@@ -57,8 +55,7 @@ def get_session():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """ on_startup alternative """
-    if not os.path.exists("../shared/"):
-        os.mkdir("../shared/")
+    Base.metadata.create_all(bind=engine)
     yield
 
 app = FastAPI(title="GPTeacher", version="0.1", lifespan=lifespan, log_config=logging.getLogger)

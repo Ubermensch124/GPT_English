@@ -8,7 +8,20 @@ body {
   height: 100vh;
 }
 
+main {
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  width: 100%;
+  /* padding-top: 1.0rem; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
 header {
+  z-index: 1;
   position: fixed;
   top: 0;
   left: 0;
@@ -48,14 +61,6 @@ header {
   margin-top: 0.3rem;
 }
 
-main {
-  padding-top: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
 .main-page {
   display: flex;
   flex-direction: column;
@@ -83,8 +88,8 @@ main {
 }
 
 .chat-container {
-  width: 600px;
-  height: 500px;
+  width: 500px;
+  height: 425px;
   border: 1px solid #ccc;
   border-radius: 5px;
   display: flex;
@@ -215,11 +220,33 @@ button {
     /* box-shadow: 0px 0px 5px 0px rgba(173, 0, 0, 0.3); */
   }
   50% {
-    transform: scale(1.10);
+    transform: scale(1.1);
     /* box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0.3); */
   }
   100% {
     transform: scale(1);
     /* box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0); */
   }
+}
+
+#resetBtn {
+  margin-left: 25px;
+  margin-right: 10px;
+  padding: 10px;
+  width: 25px;
+  height: 25px;
+  background-image: url("static/plus.png");
+  background-size: contain;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+}
+
+#resetBtn:hover {
+  transition: 0.3s ease;
+  background-color: rgba(128, 128, 128, 0.15);
+  box-shadow: 0 0 0 8px rgba(128, 128, 128, 0.15);
 }
