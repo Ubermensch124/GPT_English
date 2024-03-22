@@ -58,8 +58,6 @@ checkChat();
 
 async function sendTextEvent(text) {
   try {
-    // const text = textInput.value.trim();
-
     const userMessage = document.createElement("div");
     userMessage.classList.add("user-message");
     userMessage.textContent = text;
@@ -131,7 +129,7 @@ newBtn.addEventListener('click', async () => {
         chunks = [];
         sendAudioToServer(audioBlob);
         mediaRecorder = null;
-        newBtn.style.backgroundImage = 'url("static/mic.png")';
+        newBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
         newBtn.classList.remove('Rec');
         outerBtn.classList.remove('Rec-outer');
         newBtn.title = "Start recording";
@@ -139,7 +137,7 @@ newBtn.addEventListener('click', async () => {
       });
 
       mediaRecorder.start();
-      newBtn.style.backgroundImage = 'url("static/mic_red.png")';
+      newBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
       newBtn.classList.add('Rec');
       outerBtn.classList.add('Rec-outer');
       newBtn.title = "Stop recording";
