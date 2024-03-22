@@ -3,15 +3,17 @@ import os
 import logging
 from contextlib import asynccontextmanager
 from tempfile import NamedTemporaryFile
+import asyncio
 
 import uvicorn
 from fastapi import Depends, FastAPI, File, UploadFile, Header
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 
 from whisper_audio_extraction import extract_text_from_audio
-from gpt4all_test import get_response
-from make_audio import get_speech_from_gtts
+from gpt4all_test import get_model
+# from make_audio import get_speech_from_gtts
 from database import Base, engine, Session
 from models import WebUser
 
@@ -43,6 +45,8 @@ paths = ["http://localhost", "http://127.0.0.1"]
 ports = [3000, 5173, 4173, 5500]
 origins = [f'{path}:{port}' for port in ports for path in paths]
 
+model = None
+
 
 def get_session():
     session = Session()
@@ -55,7 +59,9 @@ def get_session():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """ on_startup alternative """
+    global model
     Base.metadata.create_all(bind=engine)
+    model = get_model()
     yield
 
 app = FastAPI(title="GPTeacher", version="0.1", lifespan=lifespan, log_config=logging.getLogger)
@@ -67,12 +73,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.post("/text_prompt")
-async def text_prompt(prompt: TextPrompt, session: Session = Depends(get_session), userId: str | None = Header(None)):
-    result = function(session=session, text=prompt.text, userId=userId)
-    return result
 
 
 @app.post("/audio_prompt")
@@ -89,15 +89,23 @@ async def audio_prompt(audio: UploadFile = File(...)):
     return {"text": text}
 
 
-def function(session, text, userId):
-    res = session.query(WebUser).filter(WebUser.chat_id == userId).first()
-    chat_history = None
-    if res is not None:
-        chat_history = json.loads(res.chat_history)
 
-    gpt_response, updated_chat = get_response(current_prompt=text, chat_history=chat_history)
-
-    serialize_history = json.dumps(updated_chat)
+async def stream_gpt(model, chat_history, prompt, session, userId):
+    new_chat = []
+    print(model.current_chat_session)
+    with model.chat_session():
+        if chat_history is not None:
+            model.current_chat_session = chat_history
+        flag = True
+        for token in model.generate(prompt=prompt, streaming=True):
+            if flag:
+                token = token[1:]
+                flag = False
+            yield token
+        new_chat = model.current_chat_session
+    
+    print(new_chat)
+    serialize_history = json.dumps(new_chat)
     to_delete = session.query(WebUser).filter(WebUser.chat_id == userId).first()
     if to_delete:
         session.delete(to_delete)
@@ -105,7 +113,41 @@ def function(session, text, userId):
     session.add(new_obj)
     session.commit()
 
-    return {"GPTResponse": gpt_response, "UserPrompt": text}
+
+@app.post("/text_prompt")
+async def text_prompt(prompt: TextPrompt, session: Session = Depends(get_session), userId: str | None = Header(None)):
+    res = session.query(WebUser).filter(WebUser.chat_id == userId).first()
+    chat_history = None
+    if res is not None:
+        chat_history = json.loads(res.chat_history)
+    
+    print(model.current_chat_session)
+    return StreamingResponse(stream_gpt(model, chat_history, prompt.text, session, userId), media_type="text/plain")
+
+
+# @app.post("/text_prompt")
+# async def text_prompt(prompt: TextPrompt, session: Session = Depends(get_session), userId: str | None = Header(None)):
+#     result = function(session=session, text=prompt.text, userId=userId)
+#     return result
+
+
+# def function(session, text, userId):
+#     res = session.query(WebUser).filter(WebUser.chat_id == userId).first()
+#     chat_history = None
+#     if res is not None:
+#         chat_history = json.loads(res.chat_history)
+
+#     gpt_response, updated_chat = get_response(current_prompt=text, chat_history=chat_history)
+
+#     serialize_history = json.dumps(updated_chat)
+#     to_delete = session.query(WebUser).filter(WebUser.chat_id == userId).first()
+#     if to_delete:
+#         session.delete(to_delete)
+#     new_obj = WebUser(chat_id=userId, chat_history=serialize_history)
+#     session.add(new_obj)
+#     session.commit()
+
+#     return {"GPTResponse": gpt_response, "UserPrompt": text}
 
 
 @app.delete("/reset_conversation")

@@ -56,6 +56,41 @@ async function checkChat() {
 
 checkChat();
 
+// async function sendTextEvent(text) {
+//   try {
+//     const userMessage = document.createElement("div");
+//     userMessage.classList.add("user-message");
+//     userMessage.textContent = text;
+//     chatMessages.appendChild(userMessage);
+
+//     const response = await fetch("http://localhost:8000/text_prompt", {
+//       method: "POST",
+//       headers: { userId: userId, "Content-Type": "application/json" },
+//       body: JSON.stringify({ text: text }),
+//     });
+
+//     if (!response.ok) {
+//       throw new Error("Error sending text prompt");
+//     }
+
+//     const data = await response.json();
+
+//     const gptMessage = document.createElement("div");
+//     gptMessage.classList.add("gpt-message");
+//     gptMessage.textContent = data["GPTResponse"].trim();
+//     chatMessages.appendChild(gptMessage);
+
+//     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+//     console.log("Text sent successfully");
+//   } catch (error) {
+//     console.error("Error:", error);
+//   }
+// }
+
+
+
+
 async function sendTextEvent(text) {
   try {
     const userMessage = document.createElement("div");
@@ -73,20 +108,52 @@ async function sendTextEvent(text) {
       throw new Error("Error sending text prompt");
     }
 
-    const data = await response.json();
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let receivedData = "";
 
     const gptMessage = document.createElement("div");
     gptMessage.classList.add("gpt-message");
-    gptMessage.textContent = data["GPTResponse"].trim();
     chatMessages.appendChild(gptMessage);
 
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      let isFirstChunk = true;
+
+      const chunk = decoder.decode(value, { stream: true });
+      if (isFirstChunk) {
+        // receivedData += chunk.replace(/^\n/, "");
+        receivedData += chunk;
+        isFirstChunk = false;
+      } else {
+        receivedData += chunk;
+      }
+      console.log(chunk);
+      gptMessage.textContent = receivedData;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
     console.log("Text sent successfully");
   } catch (error) {
     console.error("Error:", error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 async function sendAudioToServer(audioBlob) {
   const formData = new FormData();
@@ -154,7 +221,7 @@ newBtn.addEventListener('click', async () => {
 
 
 document.addEventListener('keydown', (event) => {
-  if (event.code === 'Space') {
+  if (event.code === 'Space' && document.activeElement !== textInput) {
     newBtn.click();
   }
 });
