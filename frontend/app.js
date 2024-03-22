@@ -6,6 +6,8 @@ const initialMessage = document.getElementById("initialMessage");
 const textInput = document.getElementById("textInput");
 const sendTextBtn = document.getElementById("sendTextBtn");
 const newBtn = document.getElementById("newBtn");
+const outerBtn = document.getElementById("outerBtn");
+
 
 let mediaRecorder;
 let chunks = [];
@@ -131,13 +133,17 @@ newBtn.addEventListener('click', async () => {
         mediaRecorder = null;
         newBtn.style.backgroundImage = 'url("static/mic.png")';
         newBtn.classList.remove('Rec');
+        outerBtn.classList.remove('Rec-outer');
         newBtn.title = "Start recording";
+        outerBtn.title = "Start recording";
       });
 
       mediaRecorder.start();
       newBtn.style.backgroundImage = 'url("static/mic_red.png")';
       newBtn.classList.add('Rec');
+      outerBtn.classList.add('Rec-outer');
       newBtn.title = "Stop recording";
+      outerBtn.title = "Stop recording";
     } catch (error) {
       console.error('Error accessing microphone:', error);
     }
@@ -224,4 +230,9 @@ sendTextBtn.addEventListener("click", async () => {
     sendTextBtnFlag = false;
     resetBtn.disabled = false;
   }
+});
+
+
+outerBtn.addEventListener("click", async () => {
+  newBtn.click();
 });

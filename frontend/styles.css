@@ -195,7 +195,8 @@ button {
 
 #newBtn {
   margin-left: 1px;
-  margin-right: 10px;
+  margin-right: 80px;
+  margin-top: 7px;
   width: 35px;
   height: 35px;
   background-image: url("static/mic.png");
@@ -217,15 +218,12 @@ button {
 @keyframes pulse {
   0% {
     transform: scale(1);
-    /* box-shadow: 0px 0px 5px 0px rgba(173, 0, 0, 0.3); */
   }
   50% {
     transform: scale(1.1);
-    /* box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0.3); */
   }
   100% {
     transform: scale(1);
-    /* box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0); */
   }
 }
 
@@ -249,4 +247,37 @@ button {
   transition: 0.3s ease;
   background-color: rgba(128, 128, 128, 0.15);
   box-shadow: 0 0 0 8px rgba(128, 128, 128, 0.15);
+}
+
+#outerBtn {
+  position: relative;
+  margin-right: -114px;
+  width: 200px;
+  height: 50px;
+  background-color: rgb(245, 243, 243);
+  border-radius: 50%;
+}
+
+#outerBtn:hover {
+  background-color: rgb(215, 214, 214);
+  transition: 0.2s;
+}
+
+.Rec-outer {
+  animation-name: pulse-outer;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes pulse-outer {
+  0% {
+    background-color: rgba(173, 0, 0, 0.2);
+  }
+  50% {
+    background-color: rgba(173, 0, 0, 0.1);
+  }
+  100% {
+    background-color: rgba(173, 0, 0, 0.2);
+  }
 }
