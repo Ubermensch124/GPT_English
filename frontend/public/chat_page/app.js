@@ -7,7 +7,7 @@ const textInput = document.getElementById("textInput");
 const sendTextBtn = document.getElementById("sendTextBtn");
 const newBtn = document.getElementById("newBtn");
 const outerBtn = document.getElementById("outerBtn");
-
+const settingsBtn = document.getElementById('clickBtn');
 let mediaRecorder;
 let chunks = [];
 
@@ -202,11 +202,6 @@ newBtn.addEventListener("click", async () => {
   }
 });
 
-document.addEventListener("keydown", (event) => {
-  if (event.code === "Space" && document.activeElement !== textInput) {
-    newBtn.click();
-  }
-});
 
 async function resetEvent() {
   try {
@@ -235,6 +230,7 @@ resetBtn.addEventListener("click", async () => {
   textInput.value = "";
 });
 
+
 textInput.addEventListener("input", () => {
   if (textInput.value.trim()) {
     if (!sendTextBtnFlag) {
@@ -251,6 +247,7 @@ textInput.addEventListener("input", () => {
   }
 });
 
+
 textInput.addEventListener("keydown", (event) => {
   if (event.shiftKey && event.key === "Enter") {
     event.preventDefault();
@@ -258,8 +255,11 @@ textInput.addEventListener("keydown", (event) => {
   } else if (event.key === "Enter") {
     event.preventDefault();
     sendTextBtn.click();
+  } else if (event.key === 'Escape') {
+    event.target.blur(); 
   }
 });
+
 
 sendTextBtn.addEventListener("click", async () => {
   if (textInput.value.trim()) {
@@ -272,14 +272,25 @@ sendTextBtn.addEventListener("click", async () => {
   }
 });
 
+
 outerBtn.addEventListener("click", async () => {
   newBtn.click();
 });
 
+
 document.addEventListener("keydown", handleKeyDown);
 
 function handleKeyDown(event) {
-  if (event.ctrlKey && event.key === "q") {
+  if (event.code === "Space" && document.activeElement !== textInput) {
+    newBtn.click();
+  }
+  else if (event.key === '/') {
+    if (document.activeElement !== textInput) {
+      event.preventDefault();
+      textInput.focus();
+    }    
+  }
+  else if (event.ctrlKey && event.key === "q") {
     const audioMessages = document.querySelectorAll(".audio-message");
     const lastAudioMessage = audioMessages[audioMessages.length - 1];
     const audioElement = lastAudioMessage.querySelector("audio");
@@ -288,4 +299,21 @@ function handleKeyDown(event) {
       audioElement.play();
     }
   }
+  else if (event.ctrlKey && event.key === 'Tab') {
+    const audioMessages = document.querySelectorAll('.audio-message');
+    const lastAudioMessage = audioMessages[audioMessages.length - 1];
+    const audioElement = lastAudioMessage.querySelector('audio');
+    if (audioElement) {
+      if (audioElement.paused) {
+        audioElement.play();
+      } else {
+        audioElement.pause();
+      }
+    }
+  }
 }
+
+
+settingsBtn.addEventListener('click', function() {
+  alert("Настройки ещё не готовы, проявите терпение!");
+});

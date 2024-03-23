@@ -13,11 +13,10 @@ main {
   top: 0.5rem;
   left: 0;
   width: 100%;
-  /* padding-top: 1.0rem; */
+  padding-top: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
 }
 
 header {
@@ -290,4 +289,23 @@ button {
   100% {
     background-color: rgba(173, 0, 0, 0.2);
   }
+}
+
+#clickBtn {
+  margin-left: 447px;
+  width: 30px;
+  height: 30px;
+  background-image: url("static/settings.png");
+  background-size: contain;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  position: fixed;
+}
+
+#clickBtn:active {
+  width: 28px;
+  height: 28px;
+  transition: 0.01s;
 }
