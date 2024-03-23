@@ -1,5 +1,6 @@
 import string
 import random
+import os
 
 import pyttsx3
 from gtts import gTTS
@@ -7,9 +8,10 @@ from gtts import gTTS
 
 def get_random_filename() -> str:
     """ Генерация рандомного имени для файла с синтезом речи """
+    cur_dir = os.getcwd()
     chars = string.ascii_letters + string.digits
-    path = '../shared/'
-    filename = path + ''.join(random.choice(chars) for _ in range(15)) + '.ogg'
+    path = cur_dir + '\\..\\shared\\'
+    filename = path + ''.join(random.choice(chars) for _ in range(15)) + '.mp3'
 
     return filename
 

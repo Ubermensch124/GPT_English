@@ -8,7 +8,6 @@ const sendTextBtn = document.getElementById("sendTextBtn");
 const newBtn = document.getElementById("newBtn");
 const outerBtn = document.getElementById("outerBtn");
 
-
 let mediaRecorder;
 let chunks = [];
 
@@ -56,40 +55,34 @@ async function checkChat() {
 
 checkChat();
 
-// async function sendTextEvent(text) {
-//   try {
-//     const userMessage = document.createElement("div");
-//     userMessage.classList.add("user-message");
-//     userMessage.textContent = text;
-//     chatMessages.appendChild(userMessage);
+async function getAudioFromServer(prompt) {
+  try {
+    const response = await fetch("http://localhost:8000/get_audio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: prompt }),
+    });
 
-//     const response = await fetch("http://localhost:8000/text_prompt", {
-//       method: "POST",
-//       headers: { userId: userId, "Content-Type": "application/json" },
-//       body: JSON.stringify({ text: text }),
-//     });
+    if (response.ok) {
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
 
-//     if (!response.ok) {
-//       throw new Error("Error sending text prompt");
-//     }
+      const gptMessage = document.createElement("div");
+      gptMessage.classList.add("audio-message");
 
-//     const data = await response.json();
+      const audioElement = document.createElement("audio");
+      audioElement.src = audioUrl;
+      audioElement.controls = true;
 
-//     const gptMessage = document.createElement("div");
-//     gptMessage.classList.add("gpt-message");
-//     gptMessage.textContent = data["GPTResponse"].trim();
-//     chatMessages.appendChild(gptMessage);
-
-//     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-//     console.log("Text sent successfully");
-//   } catch (error) {
-//     console.error("Error:", error);
-//   }
-// }
-
-
-
+      gptMessage.appendChild(audioElement);
+      chatMessages.appendChild(gptMessage);
+    } else {
+      console.error("Error fetching audio:", response.status);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
 
 async function sendTextEvent(text) {
   try {
@@ -127,7 +120,6 @@ async function sendTextEvent(text) {
 
       const chunk = decoder.decode(value, { stream: true });
       if (isFirstChunk) {
-        // receivedData += chunk.replace(/^\n/, "");
         receivedData += chunk;
         isFirstChunk = false;
       } else {
@@ -138,22 +130,14 @@ async function sendTextEvent(text) {
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    console.log(receivedData);
+    getAudioFromServer(receivedData);
+
     console.log("Text sent successfully");
   } catch (error) {
     console.error("Error:", error);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 async function sendAudioToServer(audioBlob) {
   const formData = new FormData();
@@ -180,52 +164,49 @@ async function sendAudioToServer(audioBlob) {
   }
 }
 
-
-newBtn.addEventListener('click', async () => {
+newBtn.addEventListener("click", async () => {
   if (!mediaRecorder) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
 
-      mediaRecorder.addEventListener('dataavailable', (event) => {
+      mediaRecorder.addEventListener("dataavailable", (event) => {
         chunks.push(event.data);
       });
 
-      mediaRecorder.addEventListener('stop', () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/mp3' });
+      mediaRecorder.addEventListener("stop", () => {
+        const audioBlob = new Blob(chunks, { type: "audio/mp3" });
         chunks = [];
         sendAudioToServer(audioBlob);
         mediaRecorder = null;
         newBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
-        newBtn.classList.remove('Rec');
-        outerBtn.classList.remove('Rec-outer');
+        newBtn.classList.remove("Rec");
+        outerBtn.classList.remove("Rec-outer");
         newBtn.title = "Start recording";
         outerBtn.title = "Start recording";
       });
 
       mediaRecorder.start();
       newBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
-      newBtn.classList.add('Rec');
-      outerBtn.classList.add('Rec-outer');
+      newBtn.classList.add("Rec");
+      outerBtn.classList.add("Rec-outer");
       newBtn.title = "Stop recording";
       outerBtn.title = "Stop recording";
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error("Error accessing microphone:", error);
     }
   } else {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
   }
 });
 
-
-document.addEventListener('keydown', (event) => {
-  if (event.code === 'Space' && document.activeElement !== textInput) {
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space" && document.activeElement !== textInput) {
     newBtn.click();
   }
 });
-
 
 async function resetEvent() {
   try {
@@ -245,9 +226,7 @@ async function resetEvent() {
   }
 }
 
-
 let sendTextBtnFlag = false;
-
 
 resetBtn.addEventListener("click", async () => {
   resetEvent();
@@ -255,7 +234,6 @@ resetBtn.addEventListener("click", async () => {
   sendTextBtnFlag = false;
   textInput.value = "";
 });
-
 
 textInput.addEventListener("input", () => {
   if (textInput.value.trim()) {
@@ -273,18 +251,15 @@ textInput.addEventListener("input", () => {
   }
 });
 
-
 textInput.addEventListener("keydown", (event) => {
   if (event.shiftKey && event.key === "Enter") {
     event.preventDefault();
-    textInput.value = textInput.value + '\n';
-  }
-  else if (event.key === "Enter") {
-    event.preventDefault(); 
+    textInput.value = textInput.value + "\n";
+  } else if (event.key === "Enter") {
+    event.preventDefault();
     sendTextBtn.click();
   }
 });
-
 
 sendTextBtn.addEventListener("click", async () => {
   if (textInput.value.trim()) {
@@ -297,7 +272,20 @@ sendTextBtn.addEventListener("click", async () => {
   }
 });
 
-
 outerBtn.addEventListener("click", async () => {
   newBtn.click();
 });
+
+document.addEventListener("keydown", handleKeyDown);
+
+function handleKeyDown(event) {
+  if (event.ctrlKey && event.key === "q") {
+    const audioMessages = document.querySelectorAll(".audio-message");
+    const lastAudioMessage = audioMessages[audioMessages.length - 1];
+    const audioElement = lastAudioMessage.querySelector("audio");
+    if (audioElement) {
+      audioElement.currentTime = 0;
+      audioElement.play();
+    }
+  }
+}
