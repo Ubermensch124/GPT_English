@@ -13,7 +13,7 @@ from pydantic import BaseModel, field_validator
 
 from whisper_audio_extraction import extract_text_from_audio
 from gpt4all_test import get_model
-from make_audio import get_speech_from_gtts
+from make_audio import get_speech_from_gpt
 from database import Base, engine, Session
 from models import WebUser
 
@@ -24,21 +24,9 @@ class ChatHistory(BaseModel):
     chat: list[dict] | None = None
 
 
-class Path(BaseModel):
-    path: str
-
-    @field_validator('path')
-    @classmethod
-    def validate_path(cls, value: str):
-        """ Проверяет, существует ли путь до аудио-файла """
-        if not os.path.isfile(value):
-            raise ValueError("File must exists")
-        return value
-
-
-
 class TextPrompt(BaseModel):
     text: str
+    voice: str | None = None
     
     
 paths = ["http://localhost", "http://127.0.0.1"]
@@ -77,8 +65,11 @@ app.add_middleware(
 
 
 @app.post("/get_audio")
-async def get_audio(prompt: TextPrompt):
-    filename = get_speech_from_gtts(text=prompt.text)
+async def get_audio(req: TextPrompt):
+    filename = get_speech_from_gpt(text=req.text, voice=req.voice)
+    print("44444444")
+    print(req.text, req.voice, filename)
+    print()
     return FileResponse(path=filename)
 
 
@@ -94,7 +85,6 @@ async def audio_prompt(audio: UploadFile = File(...)):
     os.remove(temp_file_path)
 
     return {"text": text}
-
 
 
 async def stream_gpt(model, chat_history, prompt, session, userId):

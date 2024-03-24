@@ -7,7 +7,14 @@ const textInput = document.getElementById("textInput");
 const sendTextBtn = document.getElementById("sendTextBtn");
 const newBtn = document.getElementById("newBtn");
 const outerBtn = document.getElementById("outerBtn");
-const settingsBtn = document.getElementById('clickBtn');
+const settingsBtn = document.getElementById("settingsBtn");
+const dropdownMenu = document.getElementById("dropdownMenu");
+const closeButton = document.getElementById("closeButton");
+const overlay = document.getElementById("overlay");
+const assistan_voice_selector = document.getElementById(
+  "assistant-voiceSelect"
+);
+
 let mediaRecorder;
 let chunks = [];
 
@@ -45,7 +52,7 @@ async function checkChat() {
         chatMessages.appendChild(message);
       }
 
-      chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
       resetBtn.disabled = false;
     }
   } catch (error) {
@@ -57,10 +64,14 @@ checkChat();
 
 async function getAudioFromServer(prompt) {
   try {
+    console.log(assistan_voice_selector.value);
     const response = await fetch("http://localhost:8000/get_audio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: prompt }),
+      body: JSON.stringify({
+        text: prompt,
+        voice: assistan_voice_selector.selectedOptions[0].text,
+      }),
     });
 
     if (response.ok) {
@@ -76,6 +87,7 @@ async function getAudioFromServer(prompt) {
 
       gptMessage.appendChild(audioElement);
       chatMessages.appendChild(gptMessage);
+      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
     } else {
       console.error("Error fetching audio:", response.status);
     }
@@ -90,6 +102,7 @@ async function sendTextEvent(text) {
     userMessage.classList.add("user-message");
     userMessage.textContent = text;
     chatMessages.appendChild(userMessage);
+    chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
 
     const response = await fetch("http://localhost:8000/text_prompt", {
       method: "POST",
@@ -127,7 +140,7 @@ async function sendTextEvent(text) {
       }
       console.log(chunk);
       gptMessage.textContent = receivedData;
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
     }
 
     console.log(receivedData);
@@ -202,7 +215,6 @@ newBtn.addEventListener("click", async () => {
   }
 });
 
-
 async function resetEvent() {
   try {
     const response = await fetch("http://localhost:8000/reset_conversation", {
@@ -230,7 +242,6 @@ resetBtn.addEventListener("click", async () => {
   textInput.value = "";
 });
 
-
 textInput.addEventListener("input", () => {
   if (textInput.value.trim()) {
     if (!sendTextBtnFlag) {
@@ -247,7 +258,6 @@ textInput.addEventListener("input", () => {
   }
 });
 
-
 textInput.addEventListener("keydown", (event) => {
   if (event.shiftKey && event.key === "Enter") {
     event.preventDefault();
@@ -255,11 +265,10 @@ textInput.addEventListener("keydown", (event) => {
   } else if (event.key === "Enter") {
     event.preventDefault();
     sendTextBtn.click();
-  } else if (event.key === 'Escape') {
-    event.target.blur(); 
+  } else if (event.key === "Escape") {
+    event.target.blur();
   }
 });
-
 
 sendTextBtn.addEventListener("click", async () => {
   if (textInput.value.trim()) {
@@ -272,25 +281,21 @@ sendTextBtn.addEventListener("click", async () => {
   }
 });
 
-
 outerBtn.addEventListener("click", async () => {
   newBtn.click();
 });
-
 
 document.addEventListener("keydown", handleKeyDown);
 
 function handleKeyDown(event) {
   if (event.code === "Space" && document.activeElement !== textInput) {
     newBtn.click();
-  }
-  else if (event.key === '/') {
+  } else if (event.key === "/") {
     if (document.activeElement !== textInput) {
       event.preventDefault();
       textInput.focus();
-    }    
-  }
-  else if (event.ctrlKey && event.key === "q") {
+    }
+  } else if (event.ctrlKey && event.key === "q") {
     const audioMessages = document.querySelectorAll(".audio-message");
     const lastAudioMessage = audioMessages[audioMessages.length - 1];
     const audioElement = lastAudioMessage.querySelector("audio");
@@ -298,11 +303,10 @@ function handleKeyDown(event) {
       audioElement.currentTime = 0;
       audioElement.play();
     }
-  }
-  else if (event.ctrlKey && event.key === 'Tab') {
-    const audioMessages = document.querySelectorAll('.audio-message');
+  } else if (event.ctrlKey && event.key === "Tab") {
+    const audioMessages = document.querySelectorAll(".audio-message");
     const lastAudioMessage = audioMessages[audioMessages.length - 1];
-    const audioElement = lastAudioMessage.querySelector('audio');
+    const audioElement = lastAudioMessage.querySelector("audio");
     if (audioElement) {
       if (audioElement.paused) {
         audioElement.play();
@@ -313,7 +317,21 @@ function handleKeyDown(event) {
   }
 }
 
+settingsBtn.addEventListener("click", function () {
+  dropdownMenu.style.display = "none" ? "block" : "none";
+  overlay.style.display = "none" ? "block" : "none";
+});
 
-settingsBtn.addEventListener('click', function() {
-  alert("Настройки ещё не готовы, проявите терпение!");
+closeButton.addEventListener("click", function () {
+  dropdownMenu.style.display = "none";
+  overlay.style.display = "none";
+});
+
+document.addEventListener("click", function (event) {
+  const isClickInside = dropdownMenu.contains(event.target);
+  const isClickOnSettingsBtn = event.target === settingsBtn;
+
+  if (!isClickInside && !isClickOnSettingsBtn) {
+    closeButton.click();
+  }
 });

@@ -27,7 +27,7 @@
           <img src="chat_page/static/logo.png" alt="Chat Icon" class="chat-icon" />
           <h2 class="chat-title">GPTeacher</h2>
           <button title="New Chat" id="resetBtn" disabled></button>
-          <button title="Settings" id="clickBtn"></button>
+          <button title="Settings" id="settingsBtn"></button>
         </div>
         <div class="chat-container">
           <div class="chat-box">
@@ -47,6 +47,34 @@
           </button>
         </div>
       </div>
+      <div class="dropdown-menu" id="dropdownMenu" style="display: none;">
+        <div class="menu-header"></div>
+        <button id="closeButton">&#10005;</button>
+        <div class="language-select-container">
+          <label for="languageSelect">Select language:</label>
+          <select id="languageSelect">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+        <div class="llm-select-container">
+          <label for="llmSelect">Select LLM:</label>
+          <select id="llmSelect">
+            <option value="en">gpt4all</option>
+            <option value="fr">Yandex GPT-lite</option>
+            <option value="es">Gigachat-lite</option>
+          </select>
+        </div>
+        <div class="assistant-voice-select-container">
+          <label for="assistant-voiceSelect">Select assistant voice:</label>
+          <select id="assistant-voiceSelect">
+            <option value="en">Female</option>
+            <option value="fr">Male</option>
+          </select>
+        </div>
+      </div>
+      <div id="overlay" class="overlay" style="display: none;"></div>
     </main>
     <script src="chat_page/app.js"></script>
   </body>
