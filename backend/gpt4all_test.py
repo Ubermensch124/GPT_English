@@ -1,52 +1,71 @@
-import requests
-
+from credentials import (
+    PROMPT_TEMPLATE,
+    SYSTEM_PROMPT,
+    SYSTEM_TEMPLATE,
+    YANDEX_CATALOG_ID,
+    YAPGT_API_KEY,
+)
 from gpt4all import GPT4All
-
-from credentials import YAPGT_API_KEY, YANDEX_CATALOG_ID
-
-
-model = GPT4All(model_name="orca-mini-3b-gguf2-q4_0.gguf")
+from requests import Request, Session
 
 
-def get_model(chat_history=None):
-    system_prompt = '### System:\nYou are an AI assistant that knows English extremely well. When user send you message you need to show him his grammatical mistakes.\n\n'
-    prompt_template = '### User:\n{0}\n\n### Response:\n'
-    model.config['systemPrompt'] = system_prompt
-    model.config['promptTemplate'] = prompt_template
+def get_model():
+    model = GPT4All(model_name="orca-mini-3b-gguf2-q4_0.gguf")
+    model.config["systemPrompt"] = SYSTEM_PROMPT
+    model.config["promptTemplate"] = PROMPT_TEMPLATE
     return model
 
 
-if __name__ == "__main__":
+def get_yagpt(
+    text, chat_history=None, native_lang="Русский язык", foreign_lang="English"
+):
+    """
+    https://cloud.yandex.ru/ru/docs/yandexgpt/quickstart#api_1 - пример структуры ответа
+    """
     yagpt_prompt = {
-      "modelUri": f"gpt://{YANDEX_CATALOG_ID}/yandexgpt-lite",
-      "completionOptions": {
-        "stream": False,
-        "temperature": 0.0,
-        "maxTokens": "1000"
-      },
-      "messages": [
-        {
-          "role": "system",
-          "text": "Найди ошибки в тексте и исправь их"
-        },
-        {
-          "role": "user",
-          "text": "Ламинат подойдет для укладке на кухне или в детской комнате – он не боиться влаги и механических повреждений благодаря защитному слою из облицованных меламиновых пленок толщиной 0,2 мм и обработанным воском замкам."
-        }
-      ]
+        "modelUri": f"gpt://{YANDEX_CATALOG_ID}/yandexgpt-lite",
+        "completionOptions": {"stream": False, "temperature": 0.0, "maxTokens": "500"},
+        "messages": [
+            {"role": "system", "text": SYSTEM_TEMPLATE[native_lang][foreign_lang]},
+            {"role": "user", "text": text},
+        ],
     }
+
+    if chat_history is not None:
+        for message in chat_history:
+            role, txt = message["role"], message["content"]
+            yagpt_prompt["messages"].append({"role": role, "text": txt})
+        yagpt_prompt["messages"].append({"role": "user", "text": text})
+        chat_history.append({"role": "user", "content": text})
+    else:
+        chat_history = [
+            {"role": "system", "content": SYSTEM_TEMPLATE[native_lang][foreign_lang]},
+            {"role": "user", "content": text},
+        ]
 
     url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Api-Key {YAPGT_API_KEY}",
-        "x-folder-id": f"{YANDEX_CATALOG_ID}"
+        "x-folder-id": f"{YANDEX_CATALOG_ID}",
     }
 
-    response = requests.post(url, headers=headers, json=yagpt_prompt)
-    print(response.status_code, response.content)
-    if response.status_code < 400:
-        result = response.text
-        print(result)
-        print()
-        print(response)
+    req = Request("POST", url=url, headers=headers, json=yagpt_prompt)
+    req = req.prepare()
+    return req, chat_history
+
+
+if __name__ == "__main__":
+    s = Session()
+    request = get_yagpt("Hello, what's your name?")
+    resp = s.send(request=request, stream=True)
+    i = 0
+    flag = False
+    for chunk in resp.iter_content(decode_unicode=True, chunk_size=5):
+        if "\n" in chunk:
+            flag = True
+        elif flag and i < 12:
+            i += 1
+            continue
+        else:
+            print(chunk, end="\n")

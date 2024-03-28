@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice Recording App</title>
-    <link rel="icon" type="image/x-icon" href="chat_page/static/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="chat_page/static/favicon.ico" />
     <link rel="stylesheet" href="chat_page/styles.css" />
   </head>
   <body>
@@ -18,15 +18,23 @@
         <h1 class="header-title">GPTeacher v0.0.1</h1>
       </div>
       <a href="https://t.me/testfor_funbot" target="_blank">
-        <img class="tg_image" src="chat_page/static/telegram-256.png" alt="Telegram bot" />
+        <img
+          class="tg-image"
+          src="chat_page/static/telegram-256.png"
+          alt="Telegram bot"
+        />
       </a>
     </header>
     <main>
       <div class="main-page">
         <div class="chat-header">
-          <img src="chat_page/static/logo.png" alt="Chat Icon" class="chat-icon" />
+          <img
+            src="chat_page/static/logo.png"
+            alt="Chat Icon"
+            class="chat-icon"
+          />
           <h2 class="chat-title">GPTeacher</h2>
-          <button title="New Chat" id="resetBtn" disabled></button>
+          <button title="New Chat" id="newChatBtn" disabled></button>
           <button title="Settings" id="settingsBtn"></button>
         </div>
         <div class="chat-container">
@@ -41,41 +49,54 @@
           ></textarea>
           <button title="Send" id="sendTextBtn"></button>
         </div>
-        <div class="button-container">
-          <button title="Start recording" id="outerBtn">
-            <button title="Start recording" id="newBtn"></button>
+        <div class="mic-button-container">
+          <button title="Start recording" id="bigMicBtn">
+            <button title="Start recording" id="smallMicBtn"></button>
           </button>
         </div>
       </div>
-      <div class="dropdown-menu" id="dropdownMenu" style="display: none;">
-        <div class="menu-header"></div>
-        <button id="closeButton">&#10005;</button>
-        <div class="language-select-container">
-          <label for="languageSelect">Select language:</label>
-          <select id="languageSelect">
+      <div class="dropdown-menu" id="dropdownMenu" style="display: none">
+        <div class="menu-header">
+          <div id="MenuTitle">Menu</div>
+        </div>
+        <button id="closeSettingsBtn">&#10005;</button>
+        <div class="select-container">
+          <label for="nativeLangSelect">Select native language:</label>
+          <select id="nativeLangSelect" class="select-list">
+            <option value="ru">Русский язык</option>
             <option value="en">English</option>
             <option value="fr">French</option>
             <option value="es">Spanish</option>
           </select>
         </div>
-        <div class="llm-select-container">
-          <label for="llmSelect">Select LLM:</label>
-          <select id="llmSelect">
-            <option value="en">gpt4all</option>
-            <option value="fr">Yandex GPT-lite</option>
-            <option value="es">Gigachat-lite</option>
+        <div class="select-container">
+          <label for="foreignLangSelect">Select study language:</label>
+          <select id="foreignLangSelect" class="select-list">
+            <option value="en">English</option>
+            <option value="ru">Русский язык</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
           </select>
         </div>
-        <div class="assistant-voice-select-container">
-          <label for="assistant-voiceSelect">Select assistant voice:</label>
-          <select id="assistant-voiceSelect">
-            <option value="en">Female</option>
-            <option value="fr">Male</option>
+        <div class="select-container">
+          <label for="llmSelect">Select LLM:</label>
+          <select id="llmSelect" class="select-list">
+            <option value="gpt4all">gpt4all</option>
+            <option value="yandex">Yandex GPT-lite</option>
+            <option value="gigachat">Gigachat-lite</option>
+          </select>
+        </div>
+        <div class="select-container">
+          <label for="assistantVoiceSelect">Select assistant voice:</label>
+          <select id="assistantVoiceSelect" class="select-list">
+            <option value="f">Female</option>
+            <option value="m">Male</option>
           </select>
         </div>
       </div>
-      <div id="overlay" class="overlay" style="display: none;"></div>
+      <div id="overlay" class="overlay" style="display: none"></div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="chat_page/app.js"></script>
   </body>
 </html>

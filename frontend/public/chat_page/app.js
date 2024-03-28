@@ -1,31 +1,37 @@
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
-const resetBtn = document.getElementById("resetBtn");
+const newChatBtn = document.getElementById("newChatBtn");
 const chatMessages = document.getElementById("chatMessages");
-const initialMessage = document.getElementById("initialMessage");
 const textInput = document.getElementById("textInput");
 const sendTextBtn = document.getElementById("sendTextBtn");
-const newBtn = document.getElementById("newBtn");
-const outerBtn = document.getElementById("outerBtn");
+const smallMicBtn = document.getElementById("smallMicBtn");
+const bigMicBtn = document.getElementById("bigMicBtn");
+
 const settingsBtn = document.getElementById("settingsBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
-const closeButton = document.getElementById("closeButton");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
 const overlay = document.getElementById("overlay");
-const assistan_voice_selector = document.getElementById(
-  "assistant-voiceSelect"
-);
+
+const assistan_voice_selector = document.getElementById("assistantVoiceSelect");
+const llm_selector = document.getElementById("llmSelect");
+const mother_lang_selector = document.getElementById("nativeLangSelect");
+const foreign_lang_selector = document.getElementById("foreignLangSelect");
 
 let mediaRecorder;
 let chunks = [];
 
-const userId = localStorage.getItem("userId") || generateUserId();
+const userId = localStorage.getItem("userId") || Math.random().toString(36);
 localStorage.setItem("userId", userId);
 
-function generateUserId() {
-  return Math.random().toString(36);
-}
+restoreChat();
 
-async function checkChat() {
+// function playAudio(audioUrl) {
+//   const audio = new Audio(audioUrl);
+//   audio.play().catch((error) => {
+//     console.error("Failed to play audio:", error);
+//   });
+// }
+
+
+async function restoreChat() {
   try {
     const response = await fetch("http://localhost:8000/get_conversation", {
       method: "GET",
@@ -38,30 +44,53 @@ async function checkChat() {
 
     const data = await response.json();
     if (data["chat_history"]) {
-      let arr = data["chat_history"];
+      let chat = data["chat_history"];
       chatMessages.innerHTML = "";
 
-      for (let i = 1; i < arr.length; i += 1) {
+      for (let i = 1; i < chat.length; i += 1) {
         const message = document.createElement("div");
         if (i % 2 === 1) {
           message.classList.add("user-message");
         } else {
           message.classList.add("gpt-message");
         }
-        message.textContent = arr[i]["content"].trim();
+        // message.textContent = chat[i]["content"].trim();
+        message.innerHTML = marked.parse(chat[i]["content"].trim());
+
+        const paragraphs = message.querySelectorAll("p");
+        const firstParagraph = paragraphs[0];
+        const lastParagraph = paragraphs[paragraphs.length - 1];
+        firstParagraph.style.marginBlockStart = "0em";
+        lastParagraph.style.marginBlockEnd = "0em";
+
+        // const audioButton = document.createElement("button");
+        // audioButton.classList.add("audio-button");
+        // audioButton.textContent = "🔊";
+        // audioButton.addEventListener("click", () =>
+        //   playAudio("C://Users//Mark//Desktop//GPT English//sample-9s.mp3")
+        // );
+        // message.appendChild(audioButton);
+
         chatMessages.appendChild(message);
       }
 
-      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
-      resetBtn.disabled = false;
+      chatMessages.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "start",
+      });
+      newChatBtn.disabled = false;
     }
   } catch (error) {
     console.error("Error:", error);
   }
 }
 
-checkChat();
 
+/**
+ * Receive text of GPT response and add audio to chat.
+ * @param {string} prompt - Text response of GPT
+ */
 async function getAudioFromServer(prompt) {
   try {
     console.log(assistan_voice_selector.value);
@@ -87,7 +116,11 @@ async function getAudioFromServer(prompt) {
 
       gptMessage.appendChild(audioElement);
       chatMessages.appendChild(gptMessage);
-      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
+      chatMessages.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "start",
+      });
     } else {
       console.error("Error fetching audio:", response.status);
     }
@@ -96,21 +129,40 @@ async function getAudioFromServer(prompt) {
   }
 }
 
+
 async function sendTextEvent(text) {
   try {
     const userMessage = document.createElement("div");
     userMessage.classList.add("user-message");
-    userMessage.textContent = text;
+    // userMessage.textContent = text;
+    userMessage.innerHTML = marked.parse(text.trim());
+    const firstParagraph = userMessage.querySelector("p");
+    firstParagraph.style.marginBlockStart = "0em";
+    const paragraphs = userMessage.querySelectorAll("p");
+    const lastParagraph = paragraphs[paragraphs.length - 1];
+    lastParagraph.style.marginBlockEnd = "0em";
     chatMessages.appendChild(userMessage);
-    chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
+    chatMessages.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "start",
+    });
 
     const response = await fetch("http://localhost:8000/text_prompt", {
       method: "POST",
       headers: { userId: userId, "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text }),
+      body: JSON.stringify({
+        text: text,
+        llm: llm_selector.selectedOptions[0].text,
+        native_lang: mother_lang_selector.selectedOptions[0].text,
+        foreign_lang: foreign_lang_selector.selectedOptions[0].text,
+      }),
     });
 
     if (!response.ok) {
+      console.log(llm_selector.selectedOptions[0].text);
+      console.log(mother_lang_selector.selectedOptions[0].text);
+      console.log(foreign_lang_selector.selectedOptions[0].text);
       throw new Error("Error sending text prompt");
     }
 
@@ -139,8 +191,18 @@ async function sendTextEvent(text) {
         receivedData += chunk;
       }
       console.log(chunk);
-      gptMessage.textContent = receivedData;
-      chatMessages.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'start' });
+      // gptMessage.textContent = receivedData;
+      gptMessage.innerHTML = marked.parse(receivedData);
+      const firstParagraph = gptMessage.querySelector("p");
+      firstParagraph.style.marginBlockStart = "0em";
+      const paragraphs = gptMessage.querySelectorAll("p");
+      const lastParagraph = paragraphs[paragraphs.length - 1];
+      lastParagraph.style.marginBlockEnd = "0em";
+      chatMessages.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "start",
+      });
     }
 
     console.log(receivedData);
@@ -157,7 +219,7 @@ async function sendAudioToServer(audioBlob) {
   formData.append("audio", audioBlob, "recording.mp3");
 
   try {
-    const response = await fetch("http://localhost:8000/audio_prompt", {
+    const response = await fetch("http://localhost:8000/audio_prompt_to_text", {
       method: "POST",
       body: formData,
       headers: { userId: userId },
@@ -177,7 +239,7 @@ async function sendAudioToServer(audioBlob) {
   }
 }
 
-newBtn.addEventListener("click", async () => {
+smallMicBtn.addEventListener("click", async () => {
   if (!mediaRecorder) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -192,19 +254,19 @@ newBtn.addEventListener("click", async () => {
         chunks = [];
         sendAudioToServer(audioBlob);
         mediaRecorder = null;
-        newBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
-        newBtn.classList.remove("Rec");
-        outerBtn.classList.remove("Rec-outer");
-        newBtn.title = "Start recording";
-        outerBtn.title = "Start recording";
+        smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
+        smallMicBtn.classList.remove("Rec");
+        bigMicBtn.classList.remove("Rec-outer");
+        smallMicBtn.title = "Start recording";
+        bigMicBtn.title = "Start recording";
       });
 
       mediaRecorder.start();
-      newBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
-      newBtn.classList.add("Rec");
-      outerBtn.classList.add("Rec-outer");
-      newBtn.title = "Stop recording";
-      outerBtn.title = "Stop recording";
+      smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
+      smallMicBtn.classList.add("Rec");
+      bigMicBtn.classList.add("Rec-outer");
+      smallMicBtn.title = "Stop recording";
+      bigMicBtn.title = "Stop recording";
     } catch (error) {
       console.error("Error accessing microphone:", error);
     }
@@ -227,7 +289,7 @@ async function resetEvent() {
     }
 
     chatMessages.innerHTML = "";
-    resetBtn.disabled = true;
+    newChatBtn.disabled = true;
   } catch (error) {
     console.error("Error:", error);
   }
@@ -235,7 +297,7 @@ async function resetEvent() {
 
 let sendTextBtnFlag = false;
 
-resetBtn.addEventListener("click", async () => {
+newChatBtn.addEventListener("click", async () => {
   resetEvent();
   sendTextBtn.style.transform = "rotate(0deg)";
   sendTextBtnFlag = false;
@@ -277,19 +339,19 @@ sendTextBtn.addEventListener("click", async () => {
     textInput.value = "";
     sendTextBtn.style.transform = "rotate(0deg)";
     sendTextBtnFlag = false;
-    resetBtn.disabled = false;
+    newChatBtn.disabled = false;
   }
 });
 
-outerBtn.addEventListener("click", async () => {
-  newBtn.click();
+bigMicBtn.addEventListener("click", async () => {
+  smallMicBtn.click();
 });
 
 document.addEventListener("keydown", handleKeyDown);
 
 function handleKeyDown(event) {
   if (event.code === "Space" && document.activeElement !== textInput) {
-    newBtn.click();
+    smallMicBtn.click();
   } else if (event.key === "/") {
     if (document.activeElement !== textInput) {
       event.preventDefault();
@@ -322,7 +384,7 @@ settingsBtn.addEventListener("click", function () {
   overlay.style.display = "none" ? "block" : "none";
 });
 
-closeButton.addEventListener("click", function () {
+closeSettingsBtn.addEventListener("click", function () {
   dropdownMenu.style.display = "none";
   overlay.style.display = "none";
 });
@@ -332,6 +394,6 @@ document.addEventListener("click", function (event) {
   const isClickOnSettingsBtn = event.target === settingsBtn;
 
   if (!isClickInside && !isClickOnSettingsBtn) {
-    closeButton.click();
+    closeSettingsBtn.click();
   }
 });

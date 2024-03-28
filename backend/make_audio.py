@@ -1,6 +1,6 @@
-import string
-import random
 import os
+import random
+import string
 
 import pyttsx3
 from gtts import gTTS
@@ -11,7 +11,8 @@ def get_random_filename() -> str:
     cur_dir = os.getcwd()
     chars = string.ascii_letters + string.digits
     path = cur_dir + '\\..\\shared\\'
-    filename = path + ''.join(random.choice(chars) for _ in range(15)) + '.mp3'
+    ext = ".mp3"
+    filename = path + ''.join(random.choice(chars) for _ in range(15)) + ext
 
     return filename
 

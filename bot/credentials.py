@@ -1,13 +1,14 @@
 import os
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-DIALECT=os.getenv('DIALECT')
-DRIVER=os.getenv('DRIVER')
-POSTGRES_USER=os.getenv('POSTGRES_USER')
-POSTGRES_DB=os.getenv('POSTGRES_DB')
-POSTGRES_HOST=os.getenv('POSTGRES_HOST')
-POSTGRES_PORT=os.getenv('POSTGRES_PORT')
-POSTGRES_PASSWORD=os.getenv('POSTGRES_PASSWORD')
+FASTAPI_API = os.getenv('FASTAPI_API')
+
+INSTRUCTION = """Вас приветствует GPT для изучения английского.\n
+Вы можете в любой момент начать писать мне сообщения на английском или отправлять голосовые. 
+Я буду анализировать ваши сообщения на наличие грамматических ошибок. 
+Также на каждое ваше сообщение я буду отвечать как живой человек, чтобы вам было интересно вести беседу.\n
+Если вы чувствуете, что тема диалога вас не устраивает, то можете воспользоваться функцией /delete_context или /start."""

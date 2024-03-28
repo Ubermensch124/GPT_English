@@ -10,3 +10,4 @@ pyttsx3
 python-multipart
 sqlalchemy
 psycopg2
+ruff
