@@ -3,5 +3,7 @@ venv/
 .venv
 env/
 user_audio/
-*.gguf
+shared/
 *.pt
+*.mp3
+*.ogg

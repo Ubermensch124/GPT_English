@@ -17,19 +17,52 @@ const foreign_lang_selector = document.getElementById("foreignLangSelect");
 
 let mediaRecorder;
 let chunks = [];
+let sendTextBtnFlag = false;
 
 const userId = localStorage.getItem("userId") || Math.random().toString(36);
 localStorage.setItem("userId", userId);
 
 restoreChat();
 
-// function playAudio(audioUrl) {
-//   const audio = new Audio(audioUrl);
-//   audio.play().catch((error) => {
-//     console.error("Failed to play audio:", error);
-//   });
-// }
+function insertTextToMsg(msg, txt) {
+  msg.innerHTML = marked.parse(txt);
+  const paragraphs = msg.querySelectorAll("p");
+  const firstParagraph = paragraphs[0];
+  const lastParagraph = paragraphs[paragraphs.length - 1];
+  firstParagraph.style.marginBlockStart = "0em";
+  lastParagraph.style.marginBlockEnd = "0em";
+}
 
+function scrollDown() {
+  chatMessages.scrollIntoView({
+    behavior: "smooth",
+    block: "end",
+    inline: "start",
+  });
+}
+
+function changeMic(flag) {
+  if (flag) {
+    smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
+    smallMicBtn.classList.remove("Rec");
+    bigMicBtn.classList.remove("Rec-outer");
+    smallMicBtn.title = "Start recording";
+    bigMicBtn.title = "Start recording";
+  } else {
+    smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
+    smallMicBtn.classList.add("Rec");
+    bigMicBtn.classList.add("Rec-outer");
+    smallMicBtn.title = "Stop recording";
+    bigMicBtn.title = "Stop recording";
+  }
+}
+
+function lastAudio() {
+  const audioMessages = document.querySelectorAll(".audio-message");
+  const lastAudioMessage = audioMessages[audioMessages.length - 1];
+  const audioElement = lastAudioMessage.querySelector("audio");
+  return audioElement;
+}
 
 async function restoreChat() {
   try {
@@ -54,31 +87,10 @@ async function restoreChat() {
         } else {
           message.classList.add("gpt-message");
         }
-        // message.textContent = chat[i]["content"].trim();
-        message.innerHTML = marked.parse(chat[i]["content"].trim());
-
-        const paragraphs = message.querySelectorAll("p");
-        const firstParagraph = paragraphs[0];
-        const lastParagraph = paragraphs[paragraphs.length - 1];
-        firstParagraph.style.marginBlockStart = "0em";
-        lastParagraph.style.marginBlockEnd = "0em";
-
-        // const audioButton = document.createElement("button");
-        // audioButton.classList.add("audio-button");
-        // audioButton.textContent = "🔊";
-        // audioButton.addEventListener("click", () =>
-        //   playAudio("C://Users//Mark//Desktop//GPT English//sample-9s.mp3")
-        // );
-        // message.appendChild(audioButton);
-
+        insertTextToMsg(message, chat[i]["content"].trim());
         chatMessages.appendChild(message);
       }
-
-      chatMessages.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "start",
-      });
+      scrollDown();
       newChatBtn.disabled = false;
     }
   } catch (error) {
@@ -86,14 +98,12 @@ async function restoreChat() {
   }
 }
 
-
 /**
  * Receive text of GPT response and add audio to chat.
  * @param {string} prompt - Text response of GPT
  */
 async function getAudioFromServer(prompt) {
   try {
-    console.log(assistan_voice_selector.value);
     const response = await fetch("http://localhost:8000/get_audio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -116,11 +126,7 @@ async function getAudioFromServer(prompt) {
 
       gptMessage.appendChild(audioElement);
       chatMessages.appendChild(gptMessage);
-      chatMessages.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "start",
-      });
+      scrollDown();
     } else {
       console.error("Error fetching audio:", response.status);
     }
@@ -129,24 +135,13 @@ async function getAudioFromServer(prompt) {
   }
 }
 
-
 async function sendTextEvent(text) {
   try {
     const userMessage = document.createElement("div");
     userMessage.classList.add("user-message");
-    // userMessage.textContent = text;
-    userMessage.innerHTML = marked.parse(text.trim());
-    const firstParagraph = userMessage.querySelector("p");
-    firstParagraph.style.marginBlockStart = "0em";
-    const paragraphs = userMessage.querySelectorAll("p");
-    const lastParagraph = paragraphs[paragraphs.length - 1];
-    lastParagraph.style.marginBlockEnd = "0em";
+    insertTextToMsg(userMessage, text.trim());
     chatMessages.appendChild(userMessage);
-    chatMessages.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-      inline: "start",
-    });
+    scrollDown();
 
     const response = await fetch("http://localhost:8000/text_prompt", {
       method: "POST",
@@ -160,9 +155,6 @@ async function sendTextEvent(text) {
     });
 
     if (!response.ok) {
-      console.log(llm_selector.selectedOptions[0].text);
-      console.log(mother_lang_selector.selectedOptions[0].text);
-      console.log(foreign_lang_selector.selectedOptions[0].text);
       throw new Error("Error sending text prompt");
     }
 
@@ -181,34 +173,13 @@ async function sendTextEvent(text) {
         break;
       }
 
-      let isFirstChunk = true;
-
       const chunk = decoder.decode(value, { stream: true });
-      if (isFirstChunk) {
-        receivedData += chunk;
-        isFirstChunk = false;
-      } else {
-        receivedData += chunk;
-      }
-      console.log(chunk);
-      // gptMessage.textContent = receivedData;
-      gptMessage.innerHTML = marked.parse(receivedData);
-      const firstParagraph = gptMessage.querySelector("p");
-      firstParagraph.style.marginBlockStart = "0em";
-      const paragraphs = gptMessage.querySelectorAll("p");
-      const lastParagraph = paragraphs[paragraphs.length - 1];
-      lastParagraph.style.marginBlockEnd = "0em";
-      chatMessages.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "start",
-      });
+      receivedData += chunk;
+      insertTextToMsg(gptMessage, receivedData);
+      scrollDown();
     }
 
-    console.log(receivedData);
     getAudioFromServer(receivedData);
-
-    console.log("Text sent successfully");
   } catch (error) {
     console.error("Error:", error);
   }
@@ -232,8 +203,24 @@ async function sendAudioToServer(audioBlob) {
     const data = await response.json();
     const txt = data["text"];
     sendTextEvent(txt);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
 
-    console.log("Audio sent successfully");
+async function resetEvent() {
+  try {
+    const response = await fetch("http://localhost:8000/reset_conversation", {
+      method: "DELETE",
+      headers: { userId: userId },
+    });
+
+    if (!response.ok) {
+      throw new Error("Error resetting conversation");
+    }
+
+    chatMessages.innerHTML = "";
+    newChatBtn.disabled = true;
   } catch (error) {
     console.error("Error:", error);
   }
@@ -254,19 +241,11 @@ smallMicBtn.addEventListener("click", async () => {
         chunks = [];
         sendAudioToServer(audioBlob);
         mediaRecorder = null;
-        smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic.png")';
-        smallMicBtn.classList.remove("Rec");
-        bigMicBtn.classList.remove("Rec-outer");
-        smallMicBtn.title = "Start recording";
-        bigMicBtn.title = "Start recording";
+        changeMic(true);
       });
 
       mediaRecorder.start();
-      smallMicBtn.style.backgroundImage = 'url("chat_page/static/mic_red.png")';
-      smallMicBtn.classList.add("Rec");
-      bigMicBtn.classList.add("Rec-outer");
-      smallMicBtn.title = "Stop recording";
-      bigMicBtn.title = "Stop recording";
+      changeMic(false);
     } catch (error) {
       console.error("Error accessing microphone:", error);
     }
@@ -277,25 +256,9 @@ smallMicBtn.addEventListener("click", async () => {
   }
 });
 
-async function resetEvent() {
-  try {
-    const response = await fetch("http://localhost:8000/reset_conversation", {
-      method: "DELETE",
-      headers: { userId: userId },
-    });
-
-    if (!response.ok) {
-      throw new Error("Error resetting conversation");
-    }
-
-    chatMessages.innerHTML = "";
-    newChatBtn.disabled = true;
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-let sendTextBtnFlag = false;
+bigMicBtn.addEventListener("click", async () => {
+  smallMicBtn.click();
+});
 
 newChatBtn.addEventListener("click", async () => {
   resetEvent();
@@ -343,42 +306,6 @@ sendTextBtn.addEventListener("click", async () => {
   }
 });
 
-bigMicBtn.addEventListener("click", async () => {
-  smallMicBtn.click();
-});
-
-document.addEventListener("keydown", handleKeyDown);
-
-function handleKeyDown(event) {
-  if (event.code === "Space" && document.activeElement !== textInput) {
-    smallMicBtn.click();
-  } else if (event.key === "/") {
-    if (document.activeElement !== textInput) {
-      event.preventDefault();
-      textInput.focus();
-    }
-  } else if (event.ctrlKey && event.key === "q") {
-    const audioMessages = document.querySelectorAll(".audio-message");
-    const lastAudioMessage = audioMessages[audioMessages.length - 1];
-    const audioElement = lastAudioMessage.querySelector("audio");
-    if (audioElement) {
-      audioElement.currentTime = 0;
-      audioElement.play();
-    }
-  } else if (event.ctrlKey && event.key === "Tab") {
-    const audioMessages = document.querySelectorAll(".audio-message");
-    const lastAudioMessage = audioMessages[audioMessages.length - 1];
-    const audioElement = lastAudioMessage.querySelector("audio");
-    if (audioElement) {
-      if (audioElement.paused) {
-        audioElement.play();
-      } else {
-        audioElement.pause();
-      }
-    }
-  }
-}
-
 settingsBtn.addEventListener("click", function () {
   dropdownMenu.style.display = "none" ? "block" : "none";
   overlay.style.display = "none" ? "block" : "none";
@@ -395,5 +322,34 @@ document.addEventListener("click", function (event) {
 
   if (!isClickInside && !isClickOnSettingsBtn) {
     closeSettingsBtn.click();
+  }
+});
+
+document.addEventListener("keydown", function (event) {
+  if (document.activeElement === textInput) {
+    return;
+  }
+  if (event.code === "Space") {
+    smallMicBtn.click();
+  } else if (event.key === "/") {
+    if (document.activeElement !== textInput) {
+      event.preventDefault();
+      textInput.focus();
+    }
+  } else if (event.key === "c") {
+    audioElement = lastAudio();
+    if (audioElement) {
+      audioElement.currentTime = 0;
+      audioElement.play();
+    }
+  } else if (event.key === "x") {
+    audioElement = lastAudio();
+    if (audioElement) {
+      if (audioElement.paused) {
+        audioElement.play();
+      } else {
+        audioElement.pause();
+      }
+    }
   }
 });
