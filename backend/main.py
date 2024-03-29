@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Literal
 
 import uvicorn
-from database import Base, Session, engine
+from database import Base, Session, check_db, engine
 from database_functions import delete_user, get_chat_history, save_chat_history
 from fastapi import Depends, FastAPI, File, Header, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,6 +87,7 @@ def get_req_session():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 	"""on_startup alternative"""
+	check_db(engine)
 	Base.metadata.create_all(bind=engine)
 	if os.path.exists('../shared'):
 		shutil.rmtree('../shared')
@@ -146,7 +147,7 @@ def get_conversation(
 async def get_audio(req: TextPrompt):
 	"""Receive text of GPT response, return file with audio"""
 	filename = get_speech_from_gpt(text=req.text, voice=req.voice)
-	return FileResponse(path=filename, media_type="audio/mpeg")
+	return FileResponse(path=filename, media_type='audio/mpeg')
 
 
 @app.post('/audio_prompt_to_text')

@@ -11,10 +11,10 @@ YANDEX_CATALOG_ID = os.getenv('YANDEX_CATALOG_ID')
 DIALECT=os.getenv('DIALECT')
 DRIVER=os.getenv('DRIVER')
 POSTGRES_USER=os.getenv('POSTGRES_USER')
-POSTGRES_DB=os.getenv('POSTGRES_DB')
+POSTGRES_PASSWORD=os.getenv('POSTGRES_PASSWORD')
 POSTGRES_HOST=os.getenv('POSTGRES_HOST')
 POSTGRES_PORT=os.getenv('POSTGRES_PORT')
-POSTGRES_PASSWORD=os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB=os.getenv('POSTGRES_DB')
 
 
 SYSTEM_PROMPT = '### System:\nYou are an AI assistant that knows English extremely well. When user send you message you need to show him his grammatical mistakes.\n\n'

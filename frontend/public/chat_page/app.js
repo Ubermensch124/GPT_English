@@ -1,3 +1,5 @@
+// require("dotenv").config({ path: '../../.env' });
+
 const newChatBtn = document.getElementById("newChatBtn");
 const chatMessages = document.getElementById("chatMessages");
 const textInput = document.getElementById("textInput");
@@ -23,6 +25,18 @@ const userId = localStorage.getItem("userId") || Math.random().toString(36);
 localStorage.setItem("userId", userId);
 
 restoreChat();
+
+function getUrl(target) {
+  const api = "http://localhost:8000";
+  const obj = {
+    get_audio: "/get_audio",
+    get_conversation: "/get_conversation",
+    text_prompt: "/text_prompt",
+    audio_prompt_to_text: "/audio_prompt_to_text",
+    reset_conversation: "/reset_conversation"
+  };
+  return api + obj[target];
+}
 
 function insertTextToMsg(msg, txt) {
   msg.innerHTML = marked.parse(txt);
@@ -66,7 +80,7 @@ function lastAudio() {
 
 async function restoreChat() {
   try {
-    const response = await fetch("http://localhost:8000/get_conversation", {
+    const response = await fetch(getUrl("get_conversation"), {
       method: "GET",
       headers: { userId: userId },
     });
@@ -104,7 +118,7 @@ async function restoreChat() {
  */
 async function getAudioFromServer(prompt) {
   try {
-    const response = await fetch("http://localhost:8000/get_audio", {
+    const response = await fetch(getUrl("get_audio"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -143,7 +157,7 @@ async function sendTextEvent(text) {
     chatMessages.appendChild(userMessage);
     scrollDown();
 
-    const response = await fetch("http://localhost:8000/text_prompt", {
+    const response = await fetch(getUrl("text_prompt"), {
       method: "POST",
       headers: { userId: userId, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -190,7 +204,7 @@ async function sendAudioToServer(audioBlob) {
   formData.append("audio", audioBlob, "recording.mp3");
 
   try {
-    const response = await fetch("http://localhost:8000/audio_prompt_to_text", {
+    const response = await fetch(getUrl("audio_prompt_to_text"), {
       method: "POST",
       body: formData,
       headers: { userId: userId },
@@ -210,7 +224,7 @@ async function sendAudioToServer(audioBlob) {
 
 async function resetEvent() {
   try {
-    const response = await fetch("http://localhost:8000/reset_conversation", {
+    const response = await fetch(getUrl("reset_conversation"), {
       method: "DELETE",
       headers: { userId: userId },
     });
