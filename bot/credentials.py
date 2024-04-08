@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-FASTAPI_API = os.getenv('FASTAPI_API')
+FASTAPI_API_HOST = os.getenv('FASTAPI_API_HOST', "localhost")
+FASTAPI_API_PORT = os.getenv('FASTAPI_API_PORT', 8000)
 
 INSTRUCTION = """Вас приветствует GPT для изучения английского.\n
 Вы можете в любой момент начать писать мне сообщения на английском или отправлять голосовые. 

@@ -1,8 +1,15 @@
 const express = require("express");
-require("dotenv").config({ path: '../.env' });
+// require("dotenv").config({ path: '../.env' });
+require("dotenv").config();
 const path = require("path");
 
-const port = process.env.FRONTEND_PORT || 80;
+const prod = process.env.PRODUCTION || "False";
+let port;
+if (prod === "True") {
+  port = process.env.FRONTEND_PORT_PRODUCTION || 3000;
+} else {
+  port = process.env.FRONTEND_PORT_DEVELOPMENT || 80;
+}
 
 const app = express();
 

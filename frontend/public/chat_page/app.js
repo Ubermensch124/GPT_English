@@ -1,5 +1,3 @@
-// require("dotenv").config({ path: '../../.env' });
-
 const newChatBtn = document.getElementById("newChatBtn");
 const chatMessages = document.getElementById("chatMessages");
 const textInput = document.getElementById("textInput");
@@ -27,7 +25,7 @@ localStorage.setItem("userId", userId);
 restoreChat();
 
 function getUrl(target) {
-  const api = "http://localhost:8000";
+  const api = "http://backend:8000";
   const obj = {
     get_audio: "/get_audio",
     get_conversation: "/get_conversation",
@@ -151,6 +149,9 @@ async function getAudioFromServer(prompt) {
 
 async function sendTextEvent(text) {
   try {
+    if (!text) {
+      text = ".";
+    }
     const userMessage = document.createElement("div");
     userMessage.classList.add("user-message");
     insertTextToMsg(userMessage, text.trim());

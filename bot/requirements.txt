@@ -1,7 +1,6 @@
 python-telegram-bot
 pydub
-sqlalchemy
-psycopg2
+python-dotenv
 requests
 asyncio
 aiofiles

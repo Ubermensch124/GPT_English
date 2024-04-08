@@ -1,0 +1,19 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+venv/
+env/
+backend_venv/
+.env
+.venv
+whisper*.py
+# Ignore Git files
+.git/
+.gitignore
+
+# Ignore Docker files
+.dockerignore
+ml_models/
+requirements.txt

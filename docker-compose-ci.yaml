@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_DEVELOPMENT}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    # command: ["python3", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      - PRODUCTION=${PRODUCTION}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - YAPGT_API_KEY=${YAPGT_API_KEY}
+      - YANDEX_CATALOG_ID=${YANDEX_CATALOG_ID}
+      - POSTGRES_USER_DEVELOPMENT=${POSTGRES_USER_DEVELOPMENT}
+      - POSTGRES_PASSWORD_DEVELOPMENT=${POSTGRES_PASSWORD_DEVELOPMENT}
+      - POSTGRES_HOST_DEVELOPMENT=${POSTGRES_HOST_DEVELOPMENT}
+      - POSTGRES_PORT_DEVELOPMENT=${POSTGRES_PORT_DEVELOPMENT}
+      - POSTGRES_DB_DEVELOPMENT=${POSTGRES_DB_DEVELOPMENT}        
+      - POSTGRES_USER_PRODUCTION=${POSTGRES_USER_PRODUCTION}
+      - POSTGRES_PASSWORD_PRODUCTION=${POSTGRES_PASSWORD_PRODUCTION}
+      - POSTGRES_HOST_PRODUCTION=${POSTGRES_HOST_PRODUCTION}
+      - POSTGRES_PORT_PRODUCTION=${POSTGRES_PORT_PRODUCTION}
+      - POSTGRES_DB_PRODUCTION=${POSTGRES_DB_PRODUCTION}
+    volumes:
+      - ./backend/ml_models:/app/ml_models
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:3000"
+    environment:
+      - PRODUCTION=${PRODUCTION}
+      - FRONTEND_PORT_PRODUCTION=${FRONTEND_PORT_PRODUCTION}
+      - FRONTEND_PORT_DEVELOPMENT=${FRONTEND_PORT_DEVELOPMENT}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:

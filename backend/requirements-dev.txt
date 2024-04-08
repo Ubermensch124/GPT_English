@@ -1,13 +1,14 @@
 fastapi
 uvicorn
+openai
 gpt4all
 pydub
-openai
-openai-whisper
 gTTS
 python-dotenv
 pyttsx3
 python-multipart
 sqlalchemy
 sqlalchemy-utils
-psycopg2
+psycopg2-binary
+ruff
+pytest

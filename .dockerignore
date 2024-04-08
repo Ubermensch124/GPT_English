@@ -1,9 +1,0 @@
-venv/
-.env
-.venv
-env/
-user_audio/
-shared/
-*.pt
-*.mp3
-*.ogg

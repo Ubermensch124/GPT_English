@@ -2,12 +2,14 @@ import logging
 import uuid
 
 import requests
-from credentials import FASTAPI_API, INSTRUCTION, TELEGRAM_BOT_TOKEN
+from credentials import FASTAPI_API_HOST, FASTAPI_API_PORT, INSTRUCTION, TELEGRAM_BOT_TOKEN
 from pydub import AudioSegment
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+FASTAPI_API = f"http://{FASTAPI_API_HOST}:{FASTAPI_API_PORT}"
 
 
 async def get_user_text_from_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:

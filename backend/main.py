@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Literal
 
 import uvicorn
+from credentials import FASTAPI_API_HOST, FASTAPI_API_PORT
 from database import Base, Session, check_db, engine
 from database_functions import delete_user, get_chat_history, save_chat_history
 from fastapi import Depends, FastAPI, File, Header, UploadFile
@@ -16,7 +17,7 @@ from gpt4all_test import get_model, get_yagpt
 from make_audio import get_speech_from_gpt
 from pydantic import BaseModel
 from requests import Session as ReqSession
-from whisper_audio_extraction import extract_text_from_audio
+# from whisper_audio_extraction import extract_text_from_audio
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class TextPrompt(BaseModel):
 	foreign_lang: Lang | None = Lang.ENGLISH
 
 
-paths = ['http://localhost', 'http://127.0.0.1']
+paths = ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0', 'http://frontend']
 ports = [80, 3000, 5173, 4173, 5500]
 origins = [f'{path}:{port}' for port in ports for path in paths]
 origins.append('http://localhost')
@@ -157,7 +158,8 @@ async def audio_prompt_to_text(audio: UploadFile = File(...)):  # noqa: B008
 		temp_file.write(await audio.read())
 		temp_file_path = temp_file.name
 
-	text = extract_text_from_audio(path=temp_file_path)
+	# text = extract_text_from_audio(path=temp_file_path)
+	text = "Hi"
 
 	temp_file.close()
 	os.remove(temp_file_path)
@@ -203,4 +205,4 @@ def reset_conversation(
 
 
 if __name__ == '__main__':
-	uvicorn.run(app='main:app', host='localhost', port=8000, reload=True)
+	uvicorn.run(app='main:app', host=FASTAPI_API_HOST, port=int(FASTAPI_API_PORT), reload=False)
