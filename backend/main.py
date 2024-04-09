@@ -10,7 +10,7 @@ import uvicorn
 from credentials import FASTAPI_API_HOST, FASTAPI_API_PORT
 from database import Base, Session, check_db, engine
 from database_functions import delete_user, get_chat_history, save_chat_history
-from fastapi import Depends, FastAPI, File, Header, UploadFile
+from fastapi import Depends, FastAPI, File, Header, UploadFile, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from gpt4all_test import get_model, get_yagpt
@@ -60,7 +60,7 @@ class TextPrompt(BaseModel):
 
 
 paths = ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0', 'http://frontend']
-ports = [80, 3000, 5173, 4173, 5500]
+ports = [80, 3000, 5173, 4173, 5500, 8000]
 origins = [f'{path}:{port}' for port in ports for path in paths]
 origins.append('http://localhost')
 
@@ -139,7 +139,7 @@ def get_conversation(
 	session: Session = Depends(get_session),  # noqa: B008
 	userId: str | None = Header(None),
 	isTelegram: str | None = Header(None),
-):
+):	
 	chat_history = get_chat_history(session, userId, isTelegram)
 	return {'chat_history': chat_history}
 

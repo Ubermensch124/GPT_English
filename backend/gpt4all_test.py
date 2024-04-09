@@ -6,6 +6,7 @@ from credentials import (
 	SYSTEM_TEMPLATE,
 	YANDEX_CATALOG_ID,
 	YAPGT_API_KEY,
+	GPT_MODEL,
 )
 from gpt4all import GPT4All
 from requests import Request, Session
@@ -13,9 +14,9 @@ from requests import Request, Session
 
 def get_model():
 	model = GPT4All(
-		model_name='orca-mini-3b-gguf2-q4_0.gguf',
+		model_name=GPT_MODEL,
 		model_path='./ml_models',
-		allow_download=False,
+		allow_download=True,
 	)
 	model.config['systemPrompt'] = SYSTEM_PROMPT
 	model.config['promptTemplate'] = PROMPT_TEMPLATE

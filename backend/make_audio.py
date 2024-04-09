@@ -10,7 +10,7 @@ def get_random_filename() -> str:
     """ Генерация рандомного имени для файла с синтезом речи """
     cur_dir = os.getcwd()
     chars = string.ascii_letters + string.digits
-    path = cur_dir + '\\..\\shared\\'
+    path = cur_dir + '/../shared/'
     ext = ".mp3"
     filename = path + ''.join(random.choice(chars) for _ in range(15)) + ext
 
@@ -24,10 +24,12 @@ def get_speech_from_gpt(text: str, voice: str = 'Male'):
         return get_speech_from_gtts(text)
 
 
-def get_speech_from_gtts(text: str) -> str:
+def get_speech_from_gtts(text: str = "Hello") -> str:
     """ Синтез речи через google TTS """
     filename = get_random_filename()
 
+    print(f"\n\n{text}\n\n")
+    
     tts = gTTS(text=text, lang='en')
     tts.save(filename)
 

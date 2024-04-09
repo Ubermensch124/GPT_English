@@ -15,5 +15,3 @@ whisper*.py
 
 # Ignore Docker files
 .dockerignore
-ml_models/
-requirements.txt

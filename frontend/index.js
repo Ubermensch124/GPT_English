@@ -4,11 +4,14 @@ require("dotenv").config();
 const path = require("path");
 
 const prod = process.env.PRODUCTION || "False";
+let host;
 let port;
 if (prod === "True") {
   port = process.env.FRONTEND_PORT_PRODUCTION || 3000;
+  host = process.env.FRONTEND_HOST_PRODUCTION || "frontend";
 } else {
   port = process.env.FRONTEND_PORT_DEVELOPMENT || 80;
+  host = process.env.FRONTEND_HOST_DEVELOPMENT || "localhost";
 }
 
 const app = express();
@@ -24,5 +27,5 @@ app.get("/chat", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on http://${host}:${port}`);
 });

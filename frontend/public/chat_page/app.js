@@ -25,7 +25,7 @@ localStorage.setItem("userId", userId);
 restoreChat();
 
 function getUrl(target) {
-  const api = "http://backend:8000";
+  const api = "/api"
   const obj = {
     get_audio: "/get_audio",
     get_conversation: "/get_conversation",
@@ -84,7 +84,7 @@ async function restoreChat() {
     });
 
     if (!response.ok) {
-      throw new Error("Error sending audio to server");
+      throw new Error("Error getting conversation");
     }
 
     const data = await response.json();

@@ -11,6 +11,8 @@ YANDEX_CATALOG_ID = os.getenv('YANDEX_CATALOG_ID')
 DIALECT = os.getenv('DIALECT', 'postgresql')
 DRIVER = os.getenv('DRIVER', 'psycopg2')
 
+GPT_MODEL: str = os.getenv('GPT_MODEL', 'orca-mini-3b-gguf2-q4_0.gguf')
+
 PRODUCTION = os.getenv('PRODUCTION', 'False')
 
 if PRODUCTION == 'True':
@@ -34,6 +36,7 @@ else:
 
 
 SYSTEM_PROMPT = '### System:\nYou are an AI assistant that knows English extremely well. When user send you message you need to show him his grammatical mistakes.\n\n'
+# SYSTEM_PROMPT = "### System:\nТы учитель по русскому языку. Когда пользователь присылает тебе сообщение, твоя задача состоит в том, чтобы указать ему грамматические ошибки в его сообщении. \nСхема ответа: 'Сообщение пользователя -> сообщение пользователя с исправленной грамматикой и пунктуацией | Объяснение грамматических исправлений'. Например, на сообщение 'Привет ты не знать какое сейчас время?' должен быть получен ответ вроде 'Привет ты не знать какое сейчас время? -> Привет, ты не знаешь какое сейчас время? | ...', на месте многоточия должно стоять объяснение в каких местах в предложение пользователь ошибся.\n\n",
 PROMPT_TEMPLATE = '### User:\n{0}\n\n### Response:\n'
 
 SYSTEM_TEMPLATE = {
