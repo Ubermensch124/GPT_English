@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from requests import Session as ReqSession
 # from whisper_audio_extraction import extract_text_from_audio
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 

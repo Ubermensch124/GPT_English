@@ -11,9 +11,9 @@ RUN apt update && apt install -y python3-pip ffmpeg
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY requirements-lock.txt .
 RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
+RUN python3 -m pip install --no-cache-dir --upgrade -r requirements-lock.txt
 
 COPY . .
 

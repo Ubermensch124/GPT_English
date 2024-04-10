@@ -7,11 +7,12 @@ venv
 
 *.gguf
 *.pt
-
+ssl_cert/
 __pycache__/
 README.test.md
 user_audio/
 shared/
+*.pem
 
 # Logs
 logs

@@ -53,12 +53,15 @@ services:
       - app-network
   
   nginx:
-    image: nginx:latest
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: nginx-proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ~/ssl:/etc/ssl
     depends_on:
       - backend
       - frontend

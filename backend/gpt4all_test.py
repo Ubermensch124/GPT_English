@@ -16,7 +16,7 @@ def get_model():
 	model = GPT4All(
 		model_name=GPT_MODEL,
 		model_path='./ml_models',
-		allow_download=True,
+		allow_download=False,
 	)
 	model.config['systemPrompt'] = SYSTEM_PROMPT
 	model.config['promptTemplate'] = PROMPT_TEMPLATE
