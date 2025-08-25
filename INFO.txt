@@ -1,0 +1,27 @@
+Бот с chatgpt. Изучение английского. Ты говоришь голосом, тебе chatgpt отвечает голосом, либо ты в режиме, когда после каждого твоего ответа он предлагает исправления и ты заново пытаешься ответить. Аналогично с письмом. Есть функция выбора новой темы. Чтобы мотивировать тебя, можно сделать так, что сообщение автоматически отправляется если ты замолкаешь на N секунд. Feedback и сам диалог будут разными голосами. В конце всего диалога chatgpt сделает конспект по пройденному материалу или предложит освежить что-то в памяти. Забабахать телеграм-бот, чтобы отсылать ему аудио и принимать аудио или текст в ответ. Неплохая идея сделать пошаговый учебник, где каждый этап это gpt со своим спец промптом на конкретную тему в изучении английского. Можно сделать так со всеми основными языками. Сделать функцию отработки сложных слов, у тебя есть список слов, гпт берет слово и заставляет тебя придумать с ним предложение. Сделать возможность делать урок по конкретной серии сериала. Решить вопрос с оплатой иностранными картами. Сделать определенные ключевые фразы по типу "repeat please". Сделать красивенькое отображение diff между твоей фразой и исправлениями. Сделать говорящую анимированную голову. Сделать выбор сценариев: официант, кассир, таксист и так далее.
+
+https://openai.com/research/whisper
+https://github.com/openai/whisper?tab=readme-ov-file
+https://speechify.com/blog/text-to-speech-python/
+https://getindata.com/blog/run-your-first-private-large-language-model-llm-google-cloud-platform/
+https://www.reddit.com/r/LocalLLaMA/
+https://www.reddit.com/r/LocalLLaMA/comments/185a3mh/what_kind_of_specs_to_run_local_llm_and_serve_to/
+https://www.run.ai/blog/serving-large-language-models
+https://habr.com/ru/companies/ruvds/articles/759430/
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API
+https://cloud.google.com/text-to-speech
+https://cloud.yandex.ru/ru/
+https://cloud.vk.com/
+https://mistral.ai/
+https://www.reg.ru/
+https://github.com/eugeneyan/open-llms
+https://huggingface.co/
+https://github.com/google/jax
+https://www.modular.com/max/mojo
+https://www.promptingguide.ai/techniques/rag
+https://www.inferless.com/learn/the-state-of-serverless-gpus-part-2
+https://www.shakudo.io/blog/comparing-opensource-large-language-models
+https://platform.stability.ai/docs/getting-started
+https://www.reddit.com/r/EnglishLearning/comments/17c6z1k/how_to_use_chatgpt_to_practice_english/
+https://community.openai.com/
+https://vc.ru/ml/881777-spravochnik-po-vyboru-gpu-dlya-raboty-s-bolshimi-yazykovymi-modelyami-llama
